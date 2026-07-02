@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="main-page">
+    <nav>
+        <div class="first-part">
+            <p>Page Tamperer</p>
+        </div>
+        <div class="second-part">
+            <button class="settings-button"><img src="" alt="S"></button>
+        </div>
+    </nav>
+    <div class="separator"></div>
+    <main>
+        <div class="analytics-box">
+            <div class="total-running">
+                <div class="number">10</div>
+                <div class="description">Running</div>
+            </div>
+            <div class="total-active">
+                <div class="number">12</div>
+                <div class="description">Active</div>
+            </div>
+            <div class="total-inactive">
+                <div class="number">25</div>
+                <div class="description">Inactive</div>
+            </div>
+        </div>
+        <div class="inspect-page">
+            <button id="edit-page">Start Editing</button>
+            <div class="description">Edit the page, with all changings saved.</div>
+        </div>
+        <div class="options">
+            <div class="add-new-script">
+                <button id="add-new-script"><span class="description">Add new Script</span><span class="arrow-right">></span></button>
+            </div>
+            <div class="see-running-scripts">
+                <button id="see-running-scripts"> <span class="description">See Running Scripts</span> <span class="arrow-right">></span></button>
+            </div>
+            <div class="see-all-scripts">
+                <button id="see-all-scripts"> <span class="description">See All Scripts</span><span class="arrow-right">></span></button>
+            </div>
+            <div class="export-scripts-option">
+                <button id="export-scripts"> <span class="decription">Export Your Scripts</span> <span class="arrow-right">></span> </button>
+            </div>
+            <div class="dashboard-open">
+                <button id="dashboard-open"><span class="description">Open dashboard</span> <span class="arrow-right">></span></button>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="copyright">2026 Page Tamperer</div>
+            <div class="support-us">Support Us</div>
+            <div class="socials">
+                <div class="github"><a href="https://github.com/mohammad-ans/page-tamperer"><img src="" alt="Github"></a></div>
+                <div class="instagram"><a href="https://instagram.com"><img src="" alt="Instagram"></a></div>
+                <div class="linkedin"><a href="https://linkedin.com"><img src="" alt="LinkedIn"></a></div>
+            </div>
+        </div>
+    </main>
+    </div>
+    <div class="settings-page" hidden>
+        <nav>
+            <div class="first-part">
+                <button class="back-icon back-button"><svg class="back-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg></button>
+                <p>Settings</p>
+            </div>
+            <div class="second-part">
+                <div class="green-dot"></div>
+                <p class="version-number">v1.0.1</p>
+            </div>
+        </nav>
+        <div class="separator"></div>
+        <div class="theme-selector">
+            <p>Appearance</p>
+            <div class="theme-boxes">
+                <div class="light-theme">
+                    <div class="upper-part">
+                        <div class="colors">
+                            <div class="line1"></div>
+                            <div class="line2"></div>
+                            <div class="line3"></div>
+                        </div>
+                        <div class="selected-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-3"><path d="M20 6 9 17l-5-5"></path></svg></div>
+                    </div>
+                    <p>Light Theme</p>
+                    <p class="low-part">Light & Minimal</p>
+                </div>
+                <div class="dark-theme selected-theme">
+                    <div class="upper-part">
+                        <div class="colors">
+                            <div class="line1"></div>
+                            <div class="line2"></div>
+                            <div class="line3"></div>
+                        </div>
+                        <div class="selected-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-3"><path d="M20 6 9 17l-5-5"></path></svg></div>
+                    </div>
+                    <p>Dark Theme</p>
+                    <p class="low-part">Dark & Neon</p>
+                </div>
+            </div>
+        </div>
+            <div class="main-settings">
+                <div class="heading">
+                    Main
+                </div>
+                <div class="settings">
+                    <div class="setting">
+                        <div class="first-part">
+                            <div class="heading">Automatic Manipulation</div>
+                            <div class="low-part">Active run run before page loads</div>
+                        </div>
+                        <button class="second-part"><p class="circle"></p></button>
+                    </div>
+                    <div class="setting">
+                        <div class="first-part">
+                            <div class="heading">Allow Scripts</div>
+                            <div class="low-part">Permission only for active scripts.</div>
+                        </div>
+                        <button class="second-part"><p class="circle"></p></button>
+                    </div>
+                </div>
+            </div>
+            <div class="scripts-settings">
+                <div class="heading">
+                    Scripts
+                </div>
+                <div class="settings">
+                    <div class="setting red">
+                        <div class="first-part">
+                            <div class="heading">Clear all scripts</div>
+                            <div class="low-part">This cannot be undone</div>
+
+                        </div>
+                        <button class="second-part">
+                            <span>D</span>
+                            <span>Clear</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="about-section">
+                <div class="heading">ABOUT</div>
+                <div class="about-box">
+                    <div class="first-part">
+                        <p>Page Tamperer</p>
+                        <p class="low-part">v1.0.1 . DOT</p>
+                    </div>
+                    <div class="second-part">
+                        <a href="https://github.com/mohammad-ans/page-tamperer">
+                            <img src="" alt="G">
+                            <p>Source</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <div class="export-scripts" hidden>
+        <nav>
+            <div class="first-part">
+                <button class="back-icon back-button"><svg class="back-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg></button>
+                <p>Export Scripts</p>
+            </div>
+            <div class="second-part">
+                <button class="support-us">Support Us</button>
+            </div>
+        </nav>
+        <div class="separator"></div>
+        <div class="export-options">
+            <div class="zip">
+                <div class="heading">Export as ZIP</div>
+                <button class="export-as-zip">Export</button>
+            </div>
+            <div class="files">
+                <div class="heading">Export as Files</div>
+                <button class="export-as-files">Export</button>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard" hidden>
+        <header>
+            <h2>Page Tamperer</h2>
+            <p class="made-by">Dot Services</p>
+            <!-- <p class="version-number">v1.0.1</p> -->
+            <div class="socials">
+                <div class="github"><a href="https://github.com/mohammad-ans/page-tamperer"><img src="" alt="Github"></a></div>
+                <div class="instagram"><a href="https://instagram.com/"><img src="" alt="Instagram"></a></div>
+                <div class="linkedin"><a href="https://linkedin.com/"><img src="" alt="LinkedIn"></a></div>
+            </div>
+        </header>
+        <nav>
+            <div class="first-part">
+                <button class="back-btn back-button"><svg class="back-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg></button>
+                <p>Dashboard</p>
+            </div>
+            <div class="second-part">
+                <div class="green-dot"></div>
+                <div class="version-number">v1.0.1</div>
+            </div>
+        </nav>
+        <main>
+            <div class="dashboard-option">
+                Go to Settings
+            </div>
+        </main>
+    </div>
+</body>
+<script src="index.js"></script>
+</html>
