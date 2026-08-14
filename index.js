@@ -1,3 +1,12 @@
+const themeCurr = localStorage.getItem("theme")
+if(themeCurr){
+    document.querySelector(`.${themeCurr}`).classList.add("selected-theme")
+    document.documentElement.setAttribute("data-theme", themeCurr)
+}
+else{
+    document.querySelector(".dark-theme").classList.add("selected-theme")
+}
+
 function addGoBack(first, second, tagClass) {
     function toggleBtwFS(e) {
         if(first.checkVisibility()){
@@ -15,18 +24,10 @@ function addGoBack(first, second, tagClass) {
     backBtn.addEventListener("click", toggleBtwFS);
 }
 
-function moveToLoc(url, tagClass) {
-    
-    function moveToListener(e){
-
-    }
-    const goToBtn = document.querySelector(`.${tagClass}`);
-    goToBtn.addEventListener("click", moveToListener)
+function saveScript() {
+    const loc = location.href;
+    console.log(loc)
 }
-
-
-
-
 
 
 
@@ -35,7 +36,8 @@ function changeTheme(e) {
     currTheme.classList.remove("selected-theme");
     const property = e.currentTarget.classList[0];
     e.currentTarget.classList.add("selected-theme");
-    document.body.setAttribute("data-theme", property);
+    document.documentElement.setAttribute("data-theme", property);
+    localStorage.setItem("theme", property)
 }
 const themes = document.querySelector(".theme-boxes").children;
 for(const theme of themes){
@@ -51,5 +53,5 @@ const dashboard = document.querySelector(".dashboard");
 addGoBack(main, dashboard, "dashboard-open")
 
 
-
+saveScript()
 
