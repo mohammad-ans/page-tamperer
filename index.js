@@ -16,6 +16,7 @@ function addGoBack(first, second, tagClass) {
 }
 
 function moveToLoc(url, tagClass) {
+    
     function moveToListener(e){
 
     }

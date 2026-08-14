@@ -370,8 +370,13 @@ body{
 .main-page .options > div:last-child{
     border: none;
 }
-.footer{
-    
+.footer .socials{
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-evenly;
+}
+.footer .socials a{
+    text-decoration: none;
 }
 
 /* export-scripts */
@@ -405,6 +410,7 @@ body{
     border: none;
 }
 .export-options{
+    margin-top: 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
