@@ -2,7 +2,7 @@
  "manifest_version" : 3,
  "name": "Page Tamperer",
  "version": "1.0.0",
- "description": "NA",
+ "description": "Modify behaviour and styling of sites",
  "action": {
     "default_popup": "main.html",
     "default_icon": {
@@ -17,7 +17,7 @@
     "128": "icons/icon128.png"
  },
 
- "permissions": ["storage", "activeTab", "scripting"],
+ "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
  "host_permissions": ["<all_urls>"],
  "background": {
     "service_worker": "background.js"
@@ -25,7 +25,7 @@
  "content_scripts": [
     {
         "matches": ["<all_urls>"],
-        "js": ["content.js"],
+        "js": ["content.js", "storage.js"],
         "run_at": "document_start",
         "all_frames": false
     }
