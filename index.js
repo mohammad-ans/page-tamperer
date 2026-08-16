@@ -55,3 +55,69 @@ addGoBack(main, dashboard, "dashboard-open")
 
 saveScript()
 
+
+const editPgBtn = document.querySelector("#edit_page");
+
+editPgBtn.addEventListener("click", editPg);
+
+
+async function editPg() {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    if(!tab || !tab.id)
+        return;
+    try{
+        await chrome.tabs.sendMessage(tab.id, {type: "ENTER_EDIT_MODE"});
+        window.close();
+    }
+    catch(err) {
+        console.log(err);
+        editPgBtn.textContent = "Could not edit this page";;
+        setTimeout(() => {editPgBtn.textContent = "Start Editing"}, 2000);
+    }
+}
+
+async function initSettings() {
+    const settings = await PTStorage.getSettings();
+    const autoToggle = document.querySelector("#automatic_manipulation");
+    const scriptsToggle = document.querySelector("#allow_scripts");
+
+    function reflect(btn, isOn) {
+        btn.classList.toggle("toggle_on", isOn);
+    }
+    reflect(autoToggle, settings.automaticManipulation);
+    reflect(scriptsToggle, settings.allowScripts);
+
+    autoToggle.addEventListener("click", async ()=> {
+        const nxtVal = !autoToggle.classList.contains("toggle_on");
+        const updated = await PTStorage.updateSettings({automaticManipulation: nxtVal});
+        reflect(autoToggle, updated.automaticManipulation);
+    })
+    scriptsToggle.addEventListener("click", async () => {
+        const nxtVal = !scriptsToggle.classList.contains("toggle_on");
+        const updated = await PTStorage.updateSettings({allowScripts: nxtVal});
+        reflect(scriptsToggle, updated.allowScripts);
+    })
+}
+initSettings();
+
+(function initClearAll() {
+    const clearBtn = document.querySelector("#clear_scripts");
+    let armed = false;
+    let resetTimer = null;
+
+    clearBtn.addEventListener("click", async () => {
+        if(!armed){
+            armed = true
+            clearBtn.classList.add("confirm-armed")
+            resetTimer = setTimeout(() => {
+                armed = false
+                clearBtn.classList.remove("confirm-armed")
+            }, 3000)
+            return;
+        }
+        clearTimeout(resetTimer)
+        armed = false
+        clearBtn.classList.remove("confirm-armed")
+        await PTStorage.clearAll()
+    })
+})();

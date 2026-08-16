@@ -1,5 +1,8 @@
-chrome.runtime.onInstalled.addListener((d) => {
-    console.log(d.reason);
+importScripts("storage.js");
+
+chrome.runtime.onInstalled.addListener(async (d) => {
+    const settings = await PTStorage.getSettings();
+    console.log(settings);
 })
 
 chrome.runtime.onMessage.addListener((m, s, response) => {
