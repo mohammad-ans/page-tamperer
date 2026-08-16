@@ -176,4 +176,61 @@
         if(e.target.classList)
             e.target.classList.remove(HIGHLIGHT_CLASS);
     }
+
+    function onKeyDown(e) {
+        if(e.key === "Escape")
+            exitEditMode(false);
+    }
+    function selectElement(el) {
+        if(currentTarget)
+            currentTarget.classList.remove(SELECTED_CLASS)
+        currentTarget = el;
+        el.classList.add(SELECTED_CLASS);
+        openPanel(el);
+    }
+    function deselect() {
+        if (currentTarget)
+            currentTarget.classList.remove(SELECTED_CLASS);
+        currentTarget = null
+    }
+
+    function openPanel(el) {
+        closePanel();
+        const panel = document.createElement("div")
+        panel.id = PANEL_ID
+
+        const rect = el.getBoundingClientRect()
+        panel.style.top = `${window.scrollY + rect.bottom +6}px`
+        panel.style.left = `${window.scrollX + rect.left}px`
+        const hasDirectText = Array.from(el.childNodes).some( (n) =>
+            n.nodeType === Node.TEXT_NODE && n.textContent.trim()
+        )
+        panel.innerHTML = `
+            ${hasDirectText ? `<input type="text" class="pt-text-input" />` : ""}
+            <label>Text color <input type="color" class="pt-color-input" /></label>
+            <label>Background <input type="color" class="pt-bg-input" /></label>
+            <button class="pt-hide">Hide Element</button>
+            <button class="pt-delete>Delete Element</button>
+            <button class="pt-close">Close</button>
+        `;
+        document.documentElement.appendChild(panel);
+
+        const textInput = panel.querySelector(".pt-text-input")
+        if(textInput) {
+            textInput.value = el.textContent.trim();
+            textInput.addEventListener("input", ()=> {
+                el.textContent = textInput.value;
+                
+            })
+        }
+    }
+    function closePanel() {
+        const existing = document.getElementById(PANEL_ID)
+        if(existing)
+            existing.remove()
+    }
+    function exitEditMode(saved) {
+        active = false
+
+    }
 })
