@@ -19,6 +19,10 @@
             try {
                 if (script.type === "dom-edit")
                     applyDomEdit(script)
+                else if(script.type === "css")
+                    applyCss(script)
+                else if(script.type === "js")
+                    applyJS(script)
                 else
                     console.log("Not supported")
             }
@@ -53,5 +57,23 @@
                 el.remove();
         }
     }
-
+    function applyCss(script) {
+        const style = document.createElement("style");
+        style.setAttribute("data-page-tamperer-script", script.id)
+        style.textContent = script.code || "";
+        if (document.head)
+            document.head.appendChild(style)
+        else if (document.documentElement)
+            document.documentElement.appendChild(style)
+    }
+    function applyJS(script) {
+        const el = document.createElement("script")
+        el.textContent = script.code || "";
+        if (document.head)
+            document.head.appendChild(style)
+        else if (document.documentElement)
+            document.documentElement.appendChild(style)
+        el.remove();
+    }
+    main();
 })();
