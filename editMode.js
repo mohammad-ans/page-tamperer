@@ -334,4 +334,14 @@
         document.addEventListener("keydown", onKeyDown, true)
         console.log("Entered edit mode")
     }
-})
+    chrome.runtime.onMessage.addListener((message, sender, response) => {
+        if(message && message.type === "ENTER_EDIT_MODE") {
+            enterEditMode()
+            response({ok : true})
+        }
+        if (message && message.type === "EXIT_EDIT_MODE") {
+            exitEditMode(false)
+            response({ok: true})
+        }
+    })
+})()
