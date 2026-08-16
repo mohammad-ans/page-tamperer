@@ -144,18 +144,18 @@
     }
 
     function buildToolbar() {
-        const bar = document.createElement("div");
-        bar.id = TOOLBAR_ID;
-        bar.innerHTML = `
+        const toolbar = document.createElement("div");
+        toolbar.id = TOOLBAR_ID;
+        toolbar.innerHTML = `
             <span>Editing, click any element</span>
             <input type="text" id="__pt-script-name__" placeholder="Name this edit"/>
             <button class="pt-save">Save</button>
             <button class="pt-exit">Exit</button>
         `;
-        bar.querySelector(".pt-save").addEventListener("click", undefined);
-        bar.querySelector(".pt-exit").addEventListener("click", () => undefined)
-        document.documentElement.appendChild(bar)
-        return bar;
+        toolbar.querySelector(".pt-save").addEventListener("click", saveEdits);
+        toolbar.querySelector(".pt-exit").addEventListener("click", () => exitEditMode(false))
+        document.documentElement.appendChild(toolbar)
+        return toolbar;
     }
 
     function isEditableTarget(el) {
@@ -168,6 +168,13 @@
         return true;
     }
 
+    function onClick(e) {
+        if(!isEditableTarget(e.target))
+            return
+        e.preventDefault();
+        e.stopPropagation();
+        selectElement(e.target)
+    }
     function onMouseOver(e) {
         if(isEditableTarget(e.target))
             e.target.classList.add(HIGHLIGHT_CLASS);
@@ -220,17 +227,111 @@
             textInput.value = el.textContent.trim();
             textInput.addEventListener("input", ()=> {
                 el.textContent = textInput.value;
-                
+                queueEdit({
+                    type: "text", selector: cssPath(el), value: textInput.value
+                })
             })
         }
+
+        const colorInput = panel.querySelector(".pt-color-input")
+        colorInput.value = rgbToHex(getComputedStyle(el).color)
+        colorInput.addEventListener("input", (e) => {
+            el.style.color = e.target.value
+            queueEdit({type: "style", selector: cssPath(el), property: "color", value: e.target.value})
+        })
+
+        const bgInput = panel.querySelector(".pt-bg-input");
+        bgInput.value = rgbToHex(getComputedStyle(el).backgroundColor)
+        bgInput.addEventListener("input", (e) => {
+            el.style.backgroundColor = e.target.value
+            queueEdit({type: "style", selector: cssPath(el), property: "background-color", value: e.target.value})
+        })
+        panel.querySelector(".pt-hide").addEventListener("click", ()=>{ 
+            el.style.display = "none";
+            queueEdit({type: "style", selector: cssPath(el), property: "display", value: "none"})
+            closePanel()
+            deselect()
+        });
+        panel.querySelector(".pt-delete").addEventListener("click", ()=> {
+            const selectorVal = cssPath(el)
+            el.remove();
+            queueEdit({type: "remove", selector: selectorVal})
+            closePanel();
+            currentTarget = null;
+        })
+        panel.querySelector(".pt-close").addEventListener("click", ()=> {
+            closePanel()
+            deselect();
+        })
     }
+    
     function closePanel() {
         const existing = document.getElementById(PANEL_ID)
         if(existing)
             existing.remove()
     }
+
+    function queueEdit(edit) {
+        const i = pending.findIndex((e) =>
+            e.selector === edit.selector && e.type === edit.type && e.property === edit.property
+        )
+        if(i !== -1)
+            pending[i] = edit;
+        else
+            pending.push(edit);
+    }
+    async function saveEdits()  {
+        if(pending.length === 0) {
+            exitEditMode(false)
+            return
+        }
+        const nameInput = document.getElementById("__pt-script-name__");
+        const name = (nameInput && nameInput.value.trim()) || `Edit ${new Date().toLocaleString()}`
+        await PTStorage.add(location.hostname, {
+            name, 
+            type: "dom-edit",
+            code: JSON.stringify(pending),
+            runAt: "document_idle",
+            enabled: true
+        })
+
+        exitEditMode(true)
+    }
+
+    function rgbToHex(rgb) {
+        const nums = rgb.match(/d[/d.]+/g)
+        if(!nums)
+            return '#ffffff'
+        const [r,g,b,a] = nums.map(Number)
+        if(a === 0)
+            return "#ffffff"
+        return "#" + [r,g,b].map((x) => Math.round(x).toString(16).padStart(2, "0")).join("")
+    }
     function exitEditMode(saved) {
         active = false
-
+        deselect()
+        closePanel()
+        document.removeEventListener("mouseover", onMouseOver, true)
+        document.removeEventListener("mouseout", onMouseOut, true)
+        document.removeEventListener("click", onClick, true)
+        document.removeEventListener("keydown", onKeyDown, true)
+        const toolbar = document.getElementById(TOOLBAR_ID)
+        if (toolbar)
+            bar.remove()
+        document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((n) => n.classList.remove(HIGHLIGHT_CLASS))
+        pending = []
+        console.log(`Page tamperer exited edit mode ${saved ? " (saved)" : ""}`)
+    }
+    function enterEditMode() {
+        if(active)
+            return
+        active = true
+        injectBaseStyles();
+        buildToolbar();
+        document.addEventListener("mouseover", onMouseOver, true)
+        document.addEventListener("mouseout", onMouseOut, true)
+        document.addEventListener("click", onClick, true)
+        document.addEventListener("keydown", onKeyDown, true)
+        console.log("Entered edit mode")
     }
 })
