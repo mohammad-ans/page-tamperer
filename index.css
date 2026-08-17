@@ -495,7 +495,7 @@ nav .first-part{
     padding: 8px;
     background-color: var(--background);
 }
-.add-script-page nav{
+nav{
     color: var(--nav-text);
     display: flex;
     flex-direction: row;
