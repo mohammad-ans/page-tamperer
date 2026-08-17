@@ -316,3 +316,63 @@ async function showAllScripts() {
 }
 document.querySelector(".see-running-scripts").addEventListener("click", showRunningScripts)
 document.querySelector(".see-all-scripts").addEventListener("click", showAllScripts)
+
+function validateName(name) {
+    return (name || "script").replace(/[^a-z0-9-_]+/gi, "_").slice(0, 60) || "script"
+}
+function extension(type) {
+    return {js: "js", css: "css", "dom-edit": "json"}[type] || "txt";
+}
+function scriptToFile(script) {
+    const filename = `${validateName(script.name)}.${extension(script.type)}`
+    const data = script.type === "dom-edit" ? JSON.stringify(JSON.parse(script.code || "[]"), null, 2) : script.code || ""
+    return {host: script.host, filename, data}
+}
+function uniqueNames(usedNames, basePath) {
+    if(!usedNames.has(basePath)) {
+        usedNames.add(basePath)
+        return basePath
+    }
+    let i = 2
+    let candidate;
+    do{
+        candidate = basePath.replace(/(\.[^./]+)$/, `-${i}$1`)
+        i++
+    } while(usedNames.has(candidate))
+    return candidate;
+}
+
+(function initExport() {
+    const zipBtn = document.querySelector(".export-as-zip")
+    const filesBtn = document.querySelector(".export-as-files")
+    const status = document.querySelector("#export-status")
+    filesBtn.addEventListener("click", async () => {
+        const scripts = await PTStorage.getAllScripts()
+        if(scripts.length === 0) {
+            if(status)
+                status.textContent = "No scripts to export yet"
+            return
+        }
+        if(status)
+            status.textContent = `Exporting ${scripts.length} files...`;
+        const usedNames = new Set()
+        let failed = 0
+        for(const script of scripts){
+            const {host, filename, data} = scriptToFile(script)
+            const path = uniqueNames(usedNames, `${host}/${filename}`)
+            const url = URL.createObjectURL(new Blob([data], {type: "text/plain"}))
+            try{
+                await chrome.downloads.download({url, filename: path, saveAs: false})
+            }
+            catch(err) {
+                console.warn(`Could not export ${script.name}`, err)
+                failed++;
+            }
+            finally{
+                setTimeout(() => URL.revokeObjectURL(url), 10000)
+            }
+        }
+        if(status)
+            status.textContent = `Successfully exported: ${scripts.length}. Failed: ${failed}.`
+    })
+})()

@@ -17,7 +17,7 @@
     "128": "icons/icon128.png"
  },
 
- "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
+ "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "downloads"],
  "host_permissions": ["<all_urls>"],
  "background": {
     "service_worker": "background.js"
