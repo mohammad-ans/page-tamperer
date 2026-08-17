@@ -122,6 +122,21 @@ initSettings();
     })
 })();
 
+
+function resolveHost(url) {
+    const trimmed = url.trim()
+    if(!trimmed)
+        return "";
+    if(!trimmed.includes("://"))
+        return trimmed
+    try{
+        return new URL(trimmed).hostname
+    }
+    catch{
+        return trimmed
+    }
+}
+
 (async function initAddScript() {
     const scriptContainer = document.querySelector(".add-script-area")
     const siteInput = scriptContainer.getElementById("script-site")
@@ -143,4 +158,68 @@ initSettings();
     typeOpts.forEach((btn) => btn.addEventListener("click", ()=> setType(btn.dataset.type)))
     setType("js")
 
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true})
+    if(tab && tab.url)
+        try{
+            siteInput.value = new URL(tab.url).hostname;
+        }
+        catch(err) {
+
+        }
+    uploadBtn.addEventListener("click", ()=> fileInput.click());
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0]
+        if(!file)
+            return
+        if(!nameInput.value.trim()) {
+            nameInput.value = file.name.replace(/\.(js|css)$/i, "")
+        }
+
+        if (/\.css/i.test(file.name))
+            setType("css")
+        else if(/\.js/i.test(file.name))
+            setType("js")
+
+        const reader = new FileReader()
+        reader.onload = () => {
+            codeTextArea.value = reader.result
+        }
+        reader.onerror = () => {
+            status.textContent = "Could not read that file."
+        }
+        reader.readAsText(file)
+    })
+    saveBtn.addEventListener("click", async ()=> {
+        const host = resolveHost(siteInput.value)
+        const code = codeTextArea.value;
+        if(!hostname) {
+            status.textContent = "Enter a site first"
+            return;
+        }
+        if(!code.trim()) {
+            status.textContent = "Write or upload a script first"
+            return;
+        }
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving..."
+        try{
+            await PTStorage.addScript(hostname, {
+                name: nameInput.value.trim() || "untitled_script",
+                type: currentType,
+                code,
+                runAt: runAtSelect.value,
+                enabled: true
+            })
+            status.textContent = `Saved for ${host}`
+            nameInput.value = ""
+            codeTextArea.value = ""
+        }
+        catch(err) {
+            console.error("Failed to save script", err)
+            status.textContent = "Something went wrong saving script"
+        }
+        finally{
+            saveBtn.disabled = false
+        }
+    })
 })
