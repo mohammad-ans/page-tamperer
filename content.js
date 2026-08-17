@@ -67,13 +67,16 @@
             document.documentElement.appendChild(style)
     }
     function applyJS(script) {
-        const el = document.createElement("script")
-        el.textContent = script.code || "";
-        if (document.head)
-            document.head.appendChild(style)
-        else if (document.documentElement)
-            document.documentElement.appendChild(style)
-        el.remove();
+        chrome.runtime.sendMessage({type: "RUN_MAIN_WORLD_SCRIPT", code: script.code || ""}, (response) => {
+
+                if(chrome.runtime.lastError) {
+                    console.error(`${script.name} could not reach background`, chrome.runtime, lastError.message)
+                }
+                else if(response && !response.ok) {
+                    console.error(`${script.name} threw error while running`, response.error)
+                }
+            }
+        )
     }
     main();
 })();
