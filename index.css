@@ -45,18 +45,16 @@ body{
     margin-bottom: 8px;
     padding: 0px 4px;
 }
-.settings-page nav .first-part{
+nav .first-part{
     display: flex;
     align-items: center;
     gap: 16px;
 }
-.settings-page nav .second-part{
-    .green-dot{
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background-color: #39FF14;
-    }
+.green-dot{
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #39FF14;
 }
 .second-part{
     display: flex;
@@ -492,4 +490,76 @@ body{
 }
 .settings-button{
     cursor: pointer;
+}
+.add-script-page{
+    padding: 8px;
+    background-color: var(--background);
+}
+.add-script-page nav{
+    color: var(--nav-text);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.add-script-page main{
+    margin-top: 16px;
+}
+.add-script-page .add-script-area{
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.add-script-area .input-script-details{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.add-script-area .input-script-details label{
+    color: gray;
+    font-weight: bold;
+}
+.input-script-details input[type="text"] {
+    padding: 8px 16px;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--settings-boxes);
+    background-color: var(--settings-boxes);
+    color: var(--nav-text);
+}
+.input-script-details select{
+    padding: 8px 16px;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid gray;
+    background-color: var(--settings-boxes);
+    color: var(--nav-text);
+    cursor: pointer;
+}
+.input-script-details textarea{
+    padding: 8px 16px;
+    border-radius: 8px;
+    outline: none;
+    border: 1px solid var(--settings-boxes);
+    background-color: var(--settings-boxes);
+    color: var(--nav-text);
+    resize: none;
+}
+.input-script-details textarea:focus{
+    border: 1px solid gray;
+}
+.input-script-details input[type="text"]:focus{
+    border: 1px solid gray;
+}
+.add-script-area button{
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background-color: var(--background);
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 4px 0px;
 }
