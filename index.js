@@ -121,3 +121,26 @@ initSettings();
         await PTStorage.clearAll()
     })
 })();
+
+(async function initAddScript() {
+    const scriptContainer = document.querySelector(".add-script-area")
+    const siteInput = scriptContainer.getElementById("script-site")
+    const nameInput = scriptContainer.getElementById("script-name")
+    const typeOpts = scriptContainer.querySelectorAll(".type-option")
+    const runAtSelect = scriptContainer.getElementById("script-run-at")
+    const codeTextArea = scriptContainer.getElementById("script-code")
+    const uploadBtn = document.getElementById("upload-script-file")
+    const fileInput = document.getElementById("script-file-input")
+    const saveBtn = document.getElementById("save-script-btn")
+    const status = document.getElementById("save-script-status")
+
+    let currentType = "js"
+    function setType(type) {
+        currentType = type
+        typeOpts.forEach((btn) => btn.classList.toggle("selected", btn.CDATA_SECTION_NODE.type === type))
+        fileInput.accept = type === "css" ? ".css,text/css" : ".js,text/javascript"
+    }
+    typeOpts.forEach((btn) => btn.addEventListener("click", ()=> setType(btn.dataset.type)))
+    setType("js")
+
+})
