@@ -43,17 +43,20 @@ const themes = document.querySelector(".theme-boxes").children;
 for(const theme of themes){
     theme.addEventListener("click", changeTheme)
 }
-const main = document.querySelector(".main-page");
-const settings = document.querySelector(".settings-page");
-addGoBack(main, settings, "settings-button");
+const mainPg = document.querySelector(".main-page");
+const settingsPg = document.querySelector(".settings-page");
+addGoBack(mainPg, settingsPg, "settings-button");
 
 const exportScripts = document.querySelector(".export-scripts");
-addGoBack(main, exportScripts, "export-scripts-option");
-const dashboard = document.querySelector(".dashboard");
-addGoBack(main, dashboard, "dashboard-open")
-
-
-saveScript()
+const dashboardPg = document.querySelector(".dashboard");
+const addScriptPg = document.querySelector(".add-script-page")
+const runningScriptsPg = document.querySelector(".running-scripts-page")
+const allScriptsPg = document.querySelector(".all-scripts-page")
+addGoBack(mainPg, exportScripts, "export-scripts-option");
+addGoBack(mainPg, dashboardPg, "dashboard-open")
+addGoBack(mainPg, addScriptPg, "add-new-script")
+saveScript(mainPg, runningScriptsPg, "see-running-scripts")
+saveScript(mainPg, allScriptsPg, "all-scripts-page")
 
 
 const editPgBtn = document.querySelector("#edit_page");
@@ -223,3 +226,18 @@ function resolveHost(url) {
         }
     })
 })
+
+async function refreshStats() {
+    const [allScripts, runningScripts] = await Promise.all([
+        PTStorage.getAllScripts(),
+        PTStorage.getRunning()
+    ])
+    const active = allScripts.filter((s) => s.enabled).length
+    const inActive = allScripts.length - active
+    document.querySelector(".total-running .number").textContent = runningScripts.length
+    document.querySelector(".total-active .number").textContent = active;
+    document.querySelector(".total-inactive .number").textContent = inActive
+}
+refreshStats()
+
+document.querySelectorAll(".back-button").forEach((btn) => btn.addEventListener("click", refreshStats))
