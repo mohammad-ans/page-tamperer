@@ -24,12 +24,6 @@ function addGoBack(first, second, tagClass) {
     backBtn.addEventListener("click", toggleBtwFS);
 }
 
-function saveScript() {
-    const loc = location.href;
-    console.log(loc)
-}
-
-
 
 function changeTheme(e) {
     const currTheme = document.querySelector(".selected-theme");
@@ -55,8 +49,8 @@ const allScriptsPg = document.querySelector(".all-scripts-page")
 addGoBack(mainPg, exportScripts, "export-scripts-option");
 addGoBack(mainPg, dashboardPg, "dashboard-open")
 addGoBack(mainPg, addScriptPg, "add-new-script")
-saveScript(mainPg, runningScriptsPg, "see-running-scripts")
-saveScript(mainPg, allScriptsPg, "all-scripts-page")
+addGoBack(mainPg, runningScriptsPg, "see-running-scripts")
+addGoBack(mainPg, allScriptsPg, "all-scripts-page")
 
 
 const editPgBtn = document.querySelector("#edit_page");
@@ -141,15 +135,15 @@ function resolveHost(url) {
 }
 
 (async function initAddScript() {
-    const siteInput = addScriptPg.getElementById("script-site")
-    const nameInput = addScriptPg.getElementById("script-name")
+    const siteInput = addScriptPg.querySelector("#script-site")
+    const nameInput = addScriptPg.querySelector("#script-name")
     const typeOpts = addScriptPg.querySelectorAll(".type-option")
-    const runAtSelect = addScriptPg.getElementById("script-run-at")
-    const codeTextArea = addScriptPg.getElementById("script-code")
-    const uploadBtn = addScriptPg.getElementById("upload-script-file")
-    const fileInput = addScriptPg.getElementById("script-file-input")
-    const saveBtn = addScriptPg.getElementById("save-script-btn")
-    const status = addScriptPg.getElementById("save-script-status")
+    const runAtSelect = addScriptPg.querySelector("#script-run-at")
+    const codeTextArea = addScriptPg.querySelector("#script-code")
+    const uploadBtn = addScriptPg.querySelector("#upload-script-file")
+    const fileInput = addScriptPg.querySelector("#script-file-input")
+    const saveBtn = addScriptPg.querySelector("#save-script-btn")
+    const status = addScriptPg.querySelector("#save-script-status")
 
     let currentType = "js"
     function setType(type) {
@@ -298,3 +292,27 @@ function renderScripts(container, scripts, onChange) {
     for (const script of scripts)
         container.appendChild(buildScriptRow(script, onChange))
 }
+
+async function showRunningScripts() {
+    const listEl = document.querySelector("#running-scripts-list")
+    const noticeEl = document.querySelector("#running-scripts-notice")
+    const settings = await PTStorage.getSettings();
+    if(!settings.allowScripts) {
+        noticeEl.hidden = false
+        noticeEl.textContent = "Scripts are turned off globally in settings - nothing is currently running"
+    }
+    else{
+        noticeEl.hidden = true
+        noticeEl.textContent = ""
+    }
+    const scripts = await PTStorage.getRunning()
+    renderScripts(listEl, scripts, showRunningScripts)
+}
+
+async function showAllScripts() {
+    const listEl = document.querySelector("#all-scripts-list")
+    const scripts = await PTStorage.getAllScripts()
+    renderScripts(listEl, scripts, showAllScripts)
+}
+document.querySelector(".see-running-scripts").addEventListener("click", showRunningScripts)
+document.querySelector(".see-all-scripts").addEventListener("click", showAllScripts)
