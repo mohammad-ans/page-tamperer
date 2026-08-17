@@ -141,16 +141,15 @@ function resolveHost(url) {
 }
 
 (async function initAddScript() {
-    const scriptContainer = document.querySelector(".add-script-area")
-    const siteInput = scriptContainer.getElementById("script-site")
-    const nameInput = scriptContainer.getElementById("script-name")
-    const typeOpts = scriptContainer.querySelectorAll(".type-option")
-    const runAtSelect = scriptContainer.getElementById("script-run-at")
-    const codeTextArea = scriptContainer.getElementById("script-code")
-    const uploadBtn = document.getElementById("upload-script-file")
-    const fileInput = document.getElementById("script-file-input")
-    const saveBtn = document.getElementById("save-script-btn")
-    const status = document.getElementById("save-script-status")
+    const siteInput = addScriptPg.getElementById("script-site")
+    const nameInput = addScriptPg.getElementById("script-name")
+    const typeOpts = addScriptPg.querySelectorAll(".type-option")
+    const runAtSelect = addScriptPg.getElementById("script-run-at")
+    const codeTextArea = addScriptPg.getElementById("script-code")
+    const uploadBtn = addScriptPg.getElementById("upload-script-file")
+    const fileInput = addScriptPg.getElementById("script-file-input")
+    const saveBtn = addScriptPg.getElementById("save-script-btn")
+    const status = addScriptPg.getElementById("save-script-status")
 
     let currentType = "js"
     function setType(type) {
@@ -195,7 +194,7 @@ function resolveHost(url) {
     saveBtn.addEventListener("click", async ()=> {
         const host = resolveHost(siteInput.value)
         const code = codeTextArea.value;
-        if(!hostname) {
+        if(!host) {
             status.textContent = "Enter a site first"
             return;
         }
@@ -206,7 +205,7 @@ function resolveHost(url) {
         saveBtn.disabled = true;
         saveBtn.textContent = "Saving..."
         try{
-            await PTStorage.addScript(hostname, {
+            await PTStorage.add(host, {
                 name: nameInput.value.trim() || "untitled_script",
                 type: currentType,
                 code,
@@ -241,3 +240,61 @@ async function refreshStats() {
 refreshStats()
 
 document.querySelectorAll(".back-button").forEach((btn) => btn.addEventListener("click", refreshStats))
+
+
+const typeLabels = {js: "JavaScript", css: "CSS", "dom-edit" : "Visual Edit"}
+
+function buildScriptRow(script, onChange) {
+    const row = document.createElement("div")
+    row.className = "single-script"
+
+    const details = document.createElement("div")
+    details.className = "single-script-details"
+    const meta = document.createElement("div")
+    meta.className = "single-script-meta"
+    const site = document.createElement("span")
+    site.className = "single-script-site"
+    site.textContent = script.host
+    const type = document.createElement("span")
+    type.className = "single-script-type"
+    type.textContent = typeLabels[type] || type
+    const name = document.createElement("div")
+    name.className = "single-script-name"
+    name.textContent = script.name
+    meta.append(site, type)
+    details.append(name, meta)
+
+    const actions = document.createElement("div")
+    actions.className = "single-script-actions"
+    const scriptBtn = document.createElement("button")
+    scriptBtn.className = "single-script-toggle"
+    scriptBtn.classList.toggle("script-on", script.enabled)
+    scriptBtn.textContent = script.enabled ? "On" : "Off"
+    scriptBtn.addEventListener("click", async () => {
+        await PTStorage.scriptEnable(script.host, script.id, !script.enabled)
+        onChange()
+    })
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "single-script-delete"
+    deleteBtn.textContent = "Delete"
+    deleteBtn.addEventListener("click", async ()=> {
+        await PTStorage.deleteScript(script.host, script.id)
+        onChange();
+    })
+    actions.append(scriptBtn, deleteBtn)
+
+    row.append(details, actions)
+    return row;
+}
+function renderScripts(container, scripts, onChange) {
+    container.innerHTML = "";
+    if(scripts.length === 0) {
+        const empty = document.createElement("div")
+        empty.className = "scripts-list-empty"
+        empty.textContent = "No scripts yet"
+        container.appendChild(empty)
+        return;
+    }
+    for (const script of scripts)
+        container.appendChild(buildScriptRow(script, onChange))
+}
