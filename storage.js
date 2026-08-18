@@ -30,7 +30,7 @@
 
     async function getSettings() {
         const {settings} = await get("settings");
-        return {...DEFAULT_SETTINGS, ...DEFAULT_SETTINGS(settings || {})};
+        return {...DEFAULT_SETTINGS, ...(settings || {})};
     }
     async function updateSettings(patch) {
         const curr = await getSettings();
@@ -67,7 +67,7 @@
             updatedAt: now
         }
         site.scripts.push(newS);
-        await saveSite(host, site);
+        await save(host, site);
         return newS;
     }
     async function update(host, id, patch) {

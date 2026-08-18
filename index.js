@@ -50,10 +50,10 @@ addGoBack(mainPg, exportScripts, "export-scripts-option");
 addGoBack(mainPg, dashboardPg, "dashboard-open")
 addGoBack(mainPg, addScriptPg, "add-new-script")
 addGoBack(mainPg, runningScriptsPg, "see-running-scripts")
-addGoBack(mainPg, allScriptsPg, "all-scripts-page")
+addGoBack(mainPg, allScriptsPg, "see-all-scripts")
 
 
-const editPgBtn = document.querySelector("#edit_page");
+const editPgBtn = document.querySelector("#edit-page");
 
 editPgBtn.addEventListener("click", editPg);
 
@@ -374,5 +374,37 @@ function uniqueNames(usedNames, basePath) {
         }
         if(status)
             status.textContent = `Successfully exported: ${scripts.length}. Failed: ${failed}.`
+    })
+    zipBtn.addEventListener("click", async () => {
+        const scripts = await PTStorage.getAllScripts()
+        if (scripts.length === 0) {
+            if(status)
+                status.textContent = "No scripts to export yet"
+            return
+        }
+        if(status)
+            status.textContent = "Building Zip..."
+        const usedNames = new Set()
+        const entries = scripts.map((script) => {
+            const {host, filename, data} = scriptToFile(script)
+            return {name: uniqueNames(usedNames, `${host}/${filename}`), data}
+        })
+        const blob = PTZip.createZip(entries)
+        const url = URL.createObjectURL(blob)
+        try{
+            await chrome.downloads.download({
+                url, filename: `page-tamperer-export-${Date.now()}.zip`, saveAs: false
+            })
+            if(status)
+                status.textContent = `Exported ${scripts.length} scripts as a zip`
+        }
+        catch(err) {
+            console.error("Zip export failed", err)
+            if(status)
+                status.textContent = "ZIP Export failed"
+        }
+        finally{
+            setTimeout(() => URL.revokeObjectURL(url), 10000)
+        }
     })
 })()

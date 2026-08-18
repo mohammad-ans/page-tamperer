@@ -317,7 +317,7 @@
         document.removeEventListener("keydown", onKeyDown, true)
         const toolbar = document.getElementById(TOOLBAR_ID)
         if (toolbar)
-            bar.remove()
+            toolbar.remove()
         document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((n) => n.classList.remove(HIGHLIGHT_CLASS))
         pending = []
         console.log(`Page tamperer exited edit mode ${saved ? " (saved)" : ""}`)
