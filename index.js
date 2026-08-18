@@ -59,6 +59,15 @@ editPgBtn.addEventListener("click", editPg);
 
 
 async function editPg() {
+    const settings = await PTStorage.getSettings();
+    const anyOn = Object.values(settings.editOptions || {}).some(Boolean)
+    if(!anyOn) {
+        editPgBtn.textContent = "Enable options in settings first"
+        setTimeout(() => {
+            editPgBtn.textContent = "Start Editing"
+        }, 3000)
+        return
+    }
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
     if(!tab || !tab.id)
         return;
