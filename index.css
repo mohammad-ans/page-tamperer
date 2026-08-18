@@ -403,7 +403,7 @@ nav .first-part{
 .export-scripts nav .second-part button{
     padding: 8px;
     background-color: var(--button-bg);
-    color: var(--button-color);
+    color: var(--nav-text);
     border-radius: 4px;
     border: none;
 }
@@ -420,7 +420,7 @@ nav .first-part{
 }
 .export-options > div > button{
     background-color: var(--button-bg);
-    color: var(--button-color);
+    color: var(--nav-text);
     padding: 4px 8px;
     border-radius: 4px;
     border: none;
@@ -431,10 +431,11 @@ nav .first-part{
 }
 .dashboard header{
     background-color: var(--button-bg);
-    color: var(--button-color);
+    color: var(--nav-text);
     padding: 32px;
     display: flex;
     gap: 8px;
+    width: 100%;
 }
 .dashboard header .made-by{
     position: relative;
@@ -448,13 +449,16 @@ nav .first-part{
     font-family: monospace;
     left: -28px;
 }
-.dashboard header .socials a{
-    text-decoration: none;
-    color: var(--button-color);
+.dashboard .socials{
     display: flex;
     flex-direction: column;
-    position: relative;
-    left: 16px;
+    gap: 4px;
+}
+.dashboard header .socials a{
+    text-decoration: none;
+    color: var(--nav-text);
+    display: flex;
+    flex-direction: column;
 }
 .dashboard nav{
     padding: 8px;
