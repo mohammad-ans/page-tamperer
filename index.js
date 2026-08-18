@@ -349,12 +349,10 @@ function uniqueNames(usedNames, basePath) {
     filesBtn.addEventListener("click", async () => {
         const scripts = await PTStorage.getAllScripts()
         if(scripts.length === 0) {
-            if(status)
-                status.textContent = "No scripts to export yet"
+            status.textContent = "No scripts to export yet"
             return
         }
-        if(status)
-            status.textContent = `Exporting ${scripts.length} files...`;
+        status.textContent = `Exporting ${scripts.length} files...`;
         const usedNames = new Set()
         let failed = 0
         for(const script of scripts){
@@ -372,18 +370,15 @@ function uniqueNames(usedNames, basePath) {
                 setTimeout(() => URL.revokeObjectURL(url), 10000)
             }
         }
-        if(status)
-            status.textContent = `Successfully exported: ${scripts.length}. Failed: ${failed}.`
+        status.textContent = `Successfully exported: ${scripts.length}. Failed: ${failed}.`
     })
     zipBtn.addEventListener("click", async () => {
         const scripts = await PTStorage.getAllScripts()
         if (scripts.length === 0) {
-            if(status)
-                status.textContent = "No scripts to export yet"
+            status.textContent = "No scripts to export yet"
             return
         }
-        if(status)
-            status.textContent = "Building Zip..."
+        status.textContent = "Building Zip..."
         const usedNames = new Set()
         const entries = scripts.map((script) => {
             const {host, filename, data} = scriptToFile(script)
@@ -395,16 +390,66 @@ function uniqueNames(usedNames, basePath) {
             await chrome.downloads.download({
                 url, filename: `page-tamperer-export-${Date.now()}.zip`, saveAs: false
             })
-            if(status)
-                status.textContent = `Exported ${scripts.length} scripts as a zip`
+            status.textContent = `Exported ${scripts.length} scripts as a zip`
         }
         catch(err) {
             console.error("Zip export failed", err)
-            if(status)
-                status.textContent = "ZIP Export failed"
+            status.textContent = "ZIP Export failed"
         }
         finally{
             setTimeout(() => URL.revokeObjectURL(url), 10000)
         }
+    })
+})()
+
+async function showDashboard(){
+    const [sites, appSettings] = await Promise.all([PTStorage.getAllSites(), PTStorage.getSettings()])
+    const hosts = Object.keys(sites).sort()
+    const totalScripts = hosts.reduce((sum, h) => sum + sites[h].scripts.length, 0)
+    const totalRunning = appSettings.allowScripts ? hosts.reduce((sum, h) => sum + sites[h].scripts.filter((s) => s.enabled).length, 0) : 0;
+
+    document.querySelector(".dashboard-stat-scripts .number").textContent = totalScripts
+    document.querySelector(".dashboard-stat-sites .number").textContent = hosts.length
+    document.querySelector(".dashboard-stat-running .number").textContent = totalRunning
+
+    const listEl = document.querySelector(".dashboard-sites-list")
+    listEl.innerHTML = "";
+    if(hosts.length === 0) {
+        const empty = document.createElement("div")
+        empty.className = "scripts-list-empty";
+        empty.texContent = "No sites with saved scripts yet."
+        listEl.appendChild(empty)
+        return;
+    }
+    for(const host of hosts) {
+        const scripts = sites[host].scripts
+        const count = scripts.filter((s) => s.enabled).length
+
+        const row = document.createElement("div")
+        row.className = "dashboard-site-row"
+        const name = document.createElement("div")
+        name.className = "dashboard-site-name"
+        name.textContent = host
+        const countEl = document.createElement("div")
+        countEl.className = "dashboard-site-count"
+        countEl.textContent = `${count}/${scripts.length} enabled`
+
+        row.append(name, countEl)
+        listEl.append(row)
+    }
+}
+
+function goTo(close, open) {
+    close.style.display = "none"
+    open.style.display = "block"
+}
+
+(function initDashboard() {
+    document.querySelector(".dashboard-open").addEventListener("click", showDashboard)
+    document.querySelector(".dashboard-settings").addEventListener("click", ()=> goTo(dashboardPg, settingsPg))
+    document.querySelector(".dashboard-add-script").addEventListener("click", () => goTo(dashboardPg, addScriptPg))
+    document.querySelector(".dashboard-all-scripts").addEventListener("click", ()=> {
+        goTo(dashboardPg, allScriptsPg)
+        showAllScripts()
     })
 })()

@@ -216,8 +216,30 @@
             </div>
         </nav>
         <main>
-            <div class="dashboard-option">
-                Go to Settings
+            <div class="dashboard-stats">
+                <div class="dashboard-stat dashboard-stat-scripts">
+                    <div class="number">0</div>
+                    <div class="description">Scripts</div>
+                </div>
+                <div class="dashboard-stat dashboard-stat-sites">
+                    <div class="number">0</div>
+                    <div class="description">Sites</div>
+                </div>
+                <div class="dashboard-stat dashboard-stat-running">
+                    <div class="number">0</div>
+                    <div class="description">Running</div>
+                </div>
+            </div>
+            <div class="dashboard-sites">
+                <div class="heading">Sites</div>
+                <div class="dashboard-sites-list">
+
+                </div>
+            </div>
+            <div class="dashboard-quick-options">
+                <button class="dashboard-add-script">Add New Script</button>
+                <button class="dashboard-all-scripts">See All Scripts</button>
+                <button class="dashboard-settings">Go to Settings</button>
             </div>
         </main>
     </div>
@@ -250,8 +272,8 @@
             </div>
             <div class="input-script-details">
                 <label>Type</label>
-                <button type="button" class="type-option" data-type="js">Javascript</button>
-                <button type="button" class="type-option" data-type="css">CSS</button>
+                <button class="type-option" data-type="js">Javascript</button>
+                <button class="type-option" data-type="css">CSS</button>
             </div>
             <div class="input-script-details">
                 <label>Run</label>
@@ -264,14 +286,14 @@
             <div class="input-script-details">
                 <div class="code-field-header">
                     <label for="script-code">Code</label>
-                    <button type="button" id="upload-script-file">Upload File</button>
+                    <button id="upload-script-file">Upload File</button>
                     <input type="file" id="script-file-input" accept=".js,text/javascript" hidden>
                 </div>
                 <textarea id="script-code" rows="20" placeholder="// your code here"></textarea>
             </div>
             <div class="submit-area">
                 <div class="save-status" id="save-script-status"></div>
-                <button type="button" id="save-script-btn">Save Script</button>
+                <button id="save-script-btn">Save Script</button>
             </div>
         </div>
     </div>
