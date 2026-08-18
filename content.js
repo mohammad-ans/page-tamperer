@@ -1,7 +1,7 @@
 (function () {
     async function main() {
         const settings = await PTStorage.getSettings();
-        if(!(settings.automaticManipulation && !settings.allowScripts)) {
+        if(!(settings.automaticManipulation && settings.allowScripts)) {
             console.log("playback disabled in settings")
             return;
         }
@@ -42,7 +42,7 @@
             document.readyState === "complete" ? fn() : window.addEventListener("load", fn, {once: true})
     }
     function applyDomEdit(script) {
-        const edits = JSON.parse(script.code || [])
+        const edits = JSON.parse(script.code || "[]")
         for (const edit of edits) {
             const el = document.querySelector(edit.selector)
             if(!el) {
@@ -70,7 +70,7 @@
         chrome.runtime.sendMessage({type: "RUN_MAIN_WORLD_SCRIPT", code: script.code || ""}, (response) => {
 
                 if(chrome.runtime.lastError) {
-                    console.error(`${script.name} could not reach background`, chrome.runtime, lastError.message)
+                    console.error(`${script.name} could not reach background`, chrome.runtime.lastError.message)
                 }
                 else if(response && !response.ok) {
                     console.error(`${script.name} threw error while running`, response.error)

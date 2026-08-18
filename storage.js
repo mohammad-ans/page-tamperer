@@ -1,5 +1,5 @@
 (function (global) {
-    "use_strict";
+    "use strict";
     const DEFAULT_SETTINGS = {
         automaticManipulation: true, allowScripts: true
     };
@@ -43,7 +43,7 @@
         return sites || {};
     }
     async function getSite(host) {
-        const sites = await getAllSites;
+        const sites = await getAllSites();
         return sites[host] || {"scripts": []};
     }
     async function save(host, data) {
@@ -76,7 +76,7 @@
         if(i === -1)
             throw new Error(`Script ${id} not found for ${host}`)
         site.scripts[i] = {...site.scripts[i], ...patch, updatedAt: Date.now()}
-        await saveSite(host, site);
+        await save(host, site);
         return site.scripts[i]
     }
     async function deleteScript(host, id) {
@@ -85,7 +85,7 @@
         await save(host, site)
     }
     async function scriptEnable(host, id, enable) {
-        return update(host, id, {enable});
+        return update(host, id, {enabled: enable});
     }
     async function getAllScripts() {
         const sites = await getAllSites()
@@ -107,7 +107,7 @@
         await set({"sites" : {}});
     }
     function onChange(f) {
-        chrome.storage.addListener((changes, area) => {
+        chrome.storage.onChanged.addListener((changes, area) => {
             if(area == "local")
                 f(changes);
         })

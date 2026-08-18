@@ -30,7 +30,7 @@
             ((date.getHours() & 0x1f) << 11) | ((date.getMinutes() & 0x3f) << 5) |  ((date.getSeconds() >> 1) & 0x1f)
         )
         const day = u16(
-            (((date.getFullYear() - 1980) & 0x7f) << 9) | (((date.getMonths() + 1) & 0xf) << 5) | (date.getDate() & 0x1f)
+            (((date.getFullYear() - 1980) & 0x7f) << 9) | (((date.getMonth() + 1) & 0xf) << 5) | (date.getDate() & 0x1f)
         )
         return {time, day}
     }

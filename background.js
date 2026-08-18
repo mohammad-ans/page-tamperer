@@ -7,7 +7,7 @@ chrome.runtime.onInstalled.addListener(async (d) => {
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
     if(msg && msg.type === "RUN_MAIN_WORLD_SCRIPT") {
-        if(!sender.tab || sender.tab.id) {
+        if(!sender.tab || !sender.tab.id) {
             response({ok: false, error: "no tab context to run in"})
             return
         }

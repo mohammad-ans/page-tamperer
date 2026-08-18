@@ -148,7 +148,7 @@ function resolveHost(url) {
     let currentType = "js"
     function setType(type) {
         currentType = type
-        typeOpts.forEach((btn) => btn.classList.toggle("selected", btn.CDATA_SECTION_NODE.type === type))
+        typeOpts.forEach((btn) => btn.classList.toggle("selected", btn.dataset.type === type))
         fileInput.accept = type === "css" ? ".css,text/css" : ".js,text/javascript"
     }
     typeOpts.forEach((btn) => btn.addEventListener("click", ()=> setType(btn.dataset.type)))
@@ -171,9 +171,9 @@ function resolveHost(url) {
             nameInput.value = file.name.replace(/\.(js|css)$/i, "")
         }
 
-        if (/\.css/i.test(file.name))
+        if (/\.css$/i.test(file.name))
             setType("css")
-        else if(/\.js/i.test(file.name))
+        else if(/\.js$/i.test(file.name))
             setType("js")
 
         const reader = new FileReader()
@@ -218,7 +218,7 @@ function resolveHost(url) {
             saveBtn.disabled = false
         }
     })
-})
+})()
 
 async function refreshStats() {
     const [allScripts, runningScripts] = await Promise.all([
@@ -251,7 +251,7 @@ function buildScriptRow(script, onChange) {
     site.textContent = script.host
     const type = document.createElement("span")
     type.className = "single-script-type"
-    type.textContent = typeLabels[type] || type
+    type.textContent = typeLabels[script.type] || script.type
     const name = document.createElement("div")
     name.className = "single-script-name"
     name.textContent = script.name
@@ -295,7 +295,7 @@ function renderScripts(container, scripts, onChange) {
 
 async function showRunningScripts() {
     const listEl = document.querySelector("#running-scripts-list")
-    const noticeEl = document.querySelector("#running-scripts-notice")
+    const noticeEl = document.querySelector(".scripts-list-notice")
     const settings = await PTStorage.getSettings();
     if(!settings.allowScripts) {
         noticeEl.hidden = false

@@ -217,7 +217,7 @@
             <label>Text color <input type="color" class="pt-color-input" /></label>
             <label>Background <input type="color" class="pt-bg-input" /></label>
             <button class="pt-hide">Hide Element</button>
-            <button class="pt-delete>Delete Element</button>
+            <button class="pt-delete">Delete Element</button>
             <button class="pt-close">Close</button>
         `;
         document.documentElement.appendChild(panel);
@@ -299,7 +299,7 @@
     }
 
     function rgbToHex(rgb) {
-        const nums = rgb.match(/d[/d.]+/g)
+        const nums = rgb.match(/d[\d.]+/g)
         if(!nums)
             return '#ffffff'
         const [r,g,b,a] = nums.map(Number)
