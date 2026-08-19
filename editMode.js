@@ -11,6 +11,7 @@
     let active = false;
     let currentTarget = null;
     let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true}
+    let isTouchSession = false;
 
     function cssPath(el) {
         if (!(el instanceof Element))
@@ -173,15 +174,24 @@
             return false;
         return true;
     }
-
+    function onPointerDown(e) {
+        if(e.pointerType === "touch")
+            isTouchSession = true
+        if(!isEditableTarget(e.target))
+            return
+        e.preventDefault()
+        e.stopPropagation()
+        selectElement(e.target)
+    }
     function onClick(e) {
         if(!isEditableTarget(e.target))
             return
         e.preventDefault();
         e.stopPropagation();
-        selectElement(e.target)
     }
     function onMouseOver(e) {
+        if(isTouchSession)
+            return
         if(isEditableTarget(e.target))
             e.target.classList.add(HIGHLIGHT_CLASS);
     }
@@ -193,6 +203,12 @@
     function onKeyDown(e) {
         if(e.key === "Escape")
             exitEditMode(false);
+    }
+    function onScroll() {
+        if(document.querySelector(`#${PANEL_ID}`)){
+            closePanel()
+            deselect()
+        }
     }
     function selectElement(el) {
         if(currentTarget)
@@ -211,7 +227,8 @@
         closePanel();
         const panel = document.createElement("div")
         panel.id = PANEL_ID
-
+        panel.style.visibility = "hidden"
+        document.documentElement.appendChild(panel)
         const rect = el.getBoundingClientRect()
         panel.style.top = `${window.scrollY + rect.bottom +6}px`
         panel.style.left = `${window.scrollX + rect.left}px`
@@ -234,6 +251,7 @@
                 closePanel()
                 deselect()
             })
+            panelPos(panel, el)
             return
         }
         panel.innerHTML = `
@@ -244,7 +262,6 @@
             ${del && `<button class="pt-delete">Delete Element</button>`}
             <button class="pt-close">Close</button>
         `;
-        document.documentElement.appendChild(panel);
 
         const textInput = panel.querySelector(".pt-text-input")
         if(textInput) {
@@ -293,8 +310,26 @@
             closePanel()
             deselect();
         })
+        panelPos(panel, el)
     }
-    
+    function panelPos(panel, el) {
+        const targetRect = el.getBoundingClientRect()
+        const panelRect = panel.getBoundingClientRect()
+        const margin = 8;
+        const vpW = window.innerWidth
+        const vpH = window.innerHeight
+
+        let top = targetRect.bottom + 6;
+        if(top + panelRect.height + margin > vpH)
+            top = targetRect.top - panelRect.height - 6;
+        top = Math.max(margin, Math.min(top, vpH - panelRect.height - margin))
+        let left = targetRect.left;
+        left = Math.max(margin, Math.min(left, vpW - panelRect.width - margin))
+
+        panel.style.top = `${top}px`
+        panel.style.left = `${left}px`
+        panel.style.visibility = "visible"
+    }
     function closePanel() {
         const existing = document.getElementById(PANEL_ID)
         if(existing)
@@ -339,12 +374,15 @@
     }
     function exitEditMode(saved) {
         active = false
+        isTouchSession = false
         deselect()
         closePanel()
         document.removeEventListener("mouseover", onMouseOver, true)
         document.removeEventListener("mouseout", onMouseOut, true)
         document.removeEventListener("click", onClick, true)
         document.removeEventListener("keydown", onKeyDown, true)
+        document.removeEventListener("scroll", onScroll, true)
+        document.removeEventListener("pointerdown", onPointerDown, true)
         const toolbar = document.getElementById(TOOLBAR_ID)
         if (toolbar)
             toolbar.remove()
@@ -356,12 +394,17 @@
         if(active)
             return
         active = true
+        const settings = await PTStorage.getSettings()
+        editOptions = settings.editOptions || editOptions
+
         injectBaseStyles();
         buildToolbar();
         document.addEventListener("mouseover", onMouseOver, true)
         document.addEventListener("mouseout", onMouseOut, true)
+        document.addEventListener("pointerdown", onPointerDown, true)
         document.addEventListener("click", onClick, true)
         document.addEventListener("keydown", onKeyDown, true)
+        document.addEventListener("scroll", onScroll, true)
         console.log("Entered edit mode")
     }
     chrome.runtime.onMessage.addListener((message, sender, response) => {

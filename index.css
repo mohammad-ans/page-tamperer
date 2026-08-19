@@ -283,6 +283,20 @@ nav .first-part{
     color: black;
     text-decoration: none;
 }
+.live-edit-settings{
+    margin-bottom: 16px;
+}
+.live-edit-settings .settings{
+    display: flex;
+    flex-direction: column;
+    border: 1px solid gray;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.live-edit-settings .setting:last-child{
+    border-bottom: none;
+}
 
 /* main-page */
 .main-page{
