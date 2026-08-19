@@ -10,6 +10,7 @@
     let pending = [];
     let active = false;
     let currentTarget = null;
+    let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true}
 
     function cssPath(el) {
         if (!(el instanceof Element))
@@ -139,6 +140,11 @@
             height: 28px;
             border: none;
         }
+        #${PANEL_ID} .pt-empty-panel{
+            font-size: 12px;
+            line-height: 1.4;
+            max-width: 200px;
+        }
         `;
         document.documentElement.appendChild(style)
     }
@@ -212,12 +218,30 @@
         const hasDirectText = Array.from(el.childNodes).some( (n) =>
             n.nodeType === Node.TEXT_NODE && n.textContent.trim()
         )
+        const txt = editOptions.text && hasDirectText
+        const bgClr = editOptions.backgroundColor
+        const del = editOptions.delete
+        const hide = editOptions.hide
+        const txtClr = editOptions.textColor
+        const anyOn = txt || bgClr || del || hide || txtClr
+
+        if (!anyOn) {
+            panel.innerHTML = `
+                <div class="pt-empty--panel">No live-edit options are enabled. Turn some on in the Settings.</div>
+                <button class="pt-close">Close</>
+            `
+            panel.querySelector(".pt-close").addEventListener("click", ()=> {
+                closePanel()
+                deselect()
+            })
+            return
+        }
         panel.innerHTML = `
-            ${hasDirectText ? `<input type="text" class="pt-text-input" />` : ""}
-            <label>Text color <input type="color" class="pt-color-input" /></label>
-            <label>Background <input type="color" class="pt-bg-input" /></label>
-            <button class="pt-hide">Hide Element</button>
-            <button class="pt-delete">Delete Element</button>
+            ${txt ? `<input type="text" class="pt-text-input" />` : ""}
+            ${txtClr && `<label>Text color <input type="color" class="pt-color-input" /></label>`}
+            ${bgClr && `<label>Background <input type="color" class="pt-bg-input" /></label>`}
+            ${hide && `<button class="pt-hide">Hide Element</button>`}
+            ${del && `<button class="pt-delete">Delete Element</button>`}
             <button class="pt-close">Close</button>
         `;
         document.documentElement.appendChild(panel);
@@ -241,24 +265,30 @@
         })
 
         const bgInput = panel.querySelector(".pt-bg-input");
-        bgInput.value = rgbToHex(getComputedStyle(el).backgroundColor)
-        bgInput.addEventListener("input", (e) => {
-            el.style.backgroundColor = e.target.value
-            queueEdit({type: "style", selector: cssPath(el), property: "background-color", value: e.target.value})
-        })
-        panel.querySelector(".pt-hide").addEventListener("click", ()=>{ 
-            el.style.display = "none";
-            queueEdit({type: "style", selector: cssPath(el), property: "display", value: "none"})
-            closePanel()
-            deselect()
-        });
-        panel.querySelector(".pt-delete").addEventListener("click", ()=> {
-            const selectorVal = cssPath(el)
-            el.remove();
-            queueEdit({type: "remove", selector: selectorVal})
-            closePanel();
-            currentTarget = null;
-        })
+        if(bgInput){
+            bgInput.value = rgbToHex(getComputedStyle(el).backgroundColor)
+            bgInput.addEventListener("input", (e) => {
+                el.style.backgroundColor = e.target.value
+                queueEdit({type: "style", selector: cssPath(el), property: "background-color", value: e.target.value})
+            })
+        }
+        const hideBtn = panel.querySelector(".pt-hide")
+        if(hideBtn)
+            hideBtn.addEventListener("click", ()=>{ 
+                el.style.display = "none";
+                queueEdit({type: "style", selector: cssPath(el), property: "display", value: "none"})
+                closePanel()
+                deselect()
+            });
+        const delBtn = panel.querySelector(".pt-delete")
+        if(delBtn)
+            delBtn.addEventListener("click", ()=> {
+                const selectorVal = cssPath(el)
+                el.remove();
+                queueEdit({type: "remove", selector: selectorVal})
+                closePanel();
+                currentTarget = null;
+            })
         panel.querySelector(".pt-close").addEventListener("click", ()=> {
             closePanel()
             deselect();

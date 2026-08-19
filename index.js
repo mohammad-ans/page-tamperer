@@ -82,6 +82,14 @@ async function editPg() {
     }
 }
 
+const EDIT_OPTION_IDS = {
+    text: "edit_opt_text",
+    textColor: "edit_opt_textColor",
+    backgroundColor: "edit_opt_backgroundColor",
+    hide: "edit_opt_hide",
+    delete: "edit_opt_delete"
+}
+
 async function initSettings() {
     const settings = await PTStorage.getSettings();
     const autoToggle = document.querySelector("#automatic_manipulation");
@@ -103,6 +111,21 @@ async function initSettings() {
         const updated = await PTStorage.updateSettings({allowScripts: nxtVal});
         reflect(scriptsToggle, updated.allowScripts);
     })
+    const editOpts = settings.editOptions || {};
+    for (const [key, id] of Object.entries(EDIT_OPTION_IDS)) {
+        const btn = document.querySelector(`#${id}`)
+        if(!btn)
+            continue
+        btn.classList.toggle("toggle_on", !!editOpts[key])
+
+        btn.addEventListener("click", async () => {
+            const curr = await PTStorage.getSettings()
+            const currOpts = curr.editOptions || {}
+            const nxtVal = !btn.classList.contains("toggle_on")
+            const updated = await PTStorage.updateSettings({editOptions: {...currOpts, [key] : nxtVal}})
+            btn.classList.toggle("toggle_on", !!updated.editOptions[key])
+        })
+    }
 }
 initSettings();
 

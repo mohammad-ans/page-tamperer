@@ -1,7 +1,14 @@
 (function (global) {
     "use strict";
     const DEFAULT_SETTINGS = {
-        automaticManipulation: true, allowScripts: true
+        automaticManipulation: true, allowScripts: true,
+        editOptions: {
+            text: true,
+            textColor: true,
+            backgroundColor: true,
+            hide: true,
+            delete: true
+        }
     };
 
     function get(keys) {
