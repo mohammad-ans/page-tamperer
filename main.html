@@ -151,41 +151,129 @@
                 <div class="heading">
                     Live Edit
                 </div>
-                <div class="settings">
-                    <div class="setting">
-                        <div class="first-part">
-                            <div class="heading">Text</div>
-                            <div class="low-part">Edit an element's text content</div>
+                <div class="live-edit-group">
+                    <div class="live-edit-group-heading">Content</div>
+                    <div class="settings">
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Text</div>
+                                <div class="low-part">Edit an element's text content</div>
+                            </div>
+                            <button id="edit_opt_attribute" class="second-part"><p class="circle"></p></button>
                         </div>
-                        <button id="edit_opt_text" class="second-part"><p class="color"></p></button>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Attributes</div>
+                                <div class="low-part">Edit href, src, alt, or any attribute</div>
+                            </div>
+                            <button id="edit_opt_attribute" class="second-part"><p class="circle"></p></button>
+                        </div>
                     </div>
-                    <div class="setting">
-                        <div class="first-part">
-                            <div class="heading">Text Color</div>
-                            <div class="low-part">Change an element's text color</div>
+                </div>
+                <div class="live-edit-group">
+                    <div class="live-edit-group-heading">Appearance</div>
+                    <div class="settings">
+                        <div class="script">
+                            <div class="first-part">
+                                <div class="heading">Text Color</div>
+                                <div class="low-part">Change an element's text color</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_txtClr"></button>
                         </div>
-                        <button id="edit_opt_textColor" class="second-part"><p class="circle"></p></button>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Background Color</div>
+                                <div class="low-part">Change and element's background color</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_bgClr"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Border</div>
+                                <div class="low-part">Set border width and color</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_border"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Border Radius</div>
+                                <div class="low-part">Round an element's corners</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_borderRadius"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Opacity</div>
+                                <div class="low-part">Fade an element in or out</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_opacity"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Font Size and Weight</div>
+                                <div class="low-part">Change text size and boldness</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_fontSizeWeight"><p class="circle"></p></button>
+                        </div>
                     </div>
-                    <div class="setting">
-                        <div class="first-part">
-                            <div class="heading">Background Color</div>
-                            <div class="low-part">Change an element's background color</div>
+                </div>
+                <div class="live-edit-group">
+                    <div class="live-edit-group-heading">Layout</div>
+                    <div class="settings">
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Padding</div>
+                                <div class="low-part">Adjust paddings of elements.</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_padding"><p class="circle"></p></button>
                         </div>
-                        <button id="edit_opt_backgroundColor" class="secord-part"><p class="circle"></p></button>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="first-part">Margin</div>
+                                <div class="low-part">Adjust margins of elements.</div>
+                            </div>
+                            <button class="second-part"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Width and Height</div>
+                                <div class="low-part">Adjust width and height of elements.</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_widthHeight"><p class="circle"></p></button>
+                        </div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Z Index</div>
+                                <div class="low-part">Position elements stacked over each other.</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_zIndex"><p class="circle"></p></button>
+                        </div>
                     </div>
-                    <div class="setting">
-                        <div class="first-part">
-                            <div class="heading">Hide</div>
-                            <div class="low-part">Hide an element(display: none)</div>
+                </div>
+                <div class="live-edit-group">
+                    <div class="live-edit-group-heading">Visibility and Structure</div>
+                    <div class="settings">
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Force Show</div>
+                                <div class="low-part">Undo default hidden or visibility styling</div>
+                            </div>
+                            <button id="edit_opt_forceShow" class="second-part"><p class="circle"></p></button>
                         </div>
-                        <button id="edit_opt_hide" class="second-part"><p class="circle"></p>/button>
-                    </div>
-                    <div class="setting">
-                        <div class="first-part">
-                            <div class="heading">Delete</div>
-                            <div class="low-part">Remove an element entirely</div>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Hide</div>
+                                <div class="low-part">Hide an element with display none</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_hide"><p class="circle"></p></button>
                         </div>
-                        <button class="second-part" id="edit_opt_delete"><p class="circle"></p></button>
+                        <div class="setting">
+                            <div class="first-part">
+                                <div class="heading">Delete</div>
+                                <div class="low-part">Remove the element entirely.</div>
+                            </div>
+                            <button class="second-part" id="edit_opt_delete"><p class="circle"></p></button>
+                        </div>
                     </div>
                 </div>
             </div>
