@@ -84,8 +84,18 @@ async function editPg() {
 
 const EDIT_OPTION_IDS = {
     text: "edit_opt_text",
-    textColor: "edit_opt_textColor",
-    backgroundColor: "edit_opt_backgroundColor",
+    attributes: "edit_opt_attribute",
+    textColor: "edit_opt_txtClr",
+    backgroundColor: "edit_opt_bgClr",
+    forceShow: "edit_opt_forceShow",
+    border: "edit_opt_border",
+    borderRadius: "edit_opt_borderRadius",
+    opacity: "edit_opt_opacity",
+    fontSW: "edit_opt_fontSizeWeight",
+    padding: "edit_opt_padding",
+    margin: "edit_opt_margin",
+    size: "edit_opt_widthHeight",
+    zIdx: "edit_opt_zIndex",
     hide: "edit_opt_hide",
     delete: "edit_opt_delete"
 }

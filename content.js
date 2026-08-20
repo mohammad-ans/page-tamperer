@@ -52,7 +52,9 @@
             if (edit.type === "text")
                 el.textContent = edit.value
             else if(edit.type === "style")
-                el.style.setProperty(edit.property, edit.value)
+                el.style.setProperty(edit.property, edit.value, edit.important ? "important" : "")
+            else if(edit.type === "attribute")
+                el.setAttribute(edit.property, edit.value)
             else if (edit.type === "remove")
                 el.remove();
         }

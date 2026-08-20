@@ -7,7 +7,17 @@
             textColor: true,
             backgroundColor: true,
             hide: true,
-            delete: true
+            delete: true,
+            attributes: false,
+            zIdx: false,
+            margin: false,
+            padding: false,
+            fontSW: false,
+            size: false,
+            border: false,
+            borderRadius: false,
+            opacity: false,
+            forceShow: false
         }
     };
 
