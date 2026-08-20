@@ -226,6 +226,10 @@
         e.style.setProperty(property, value, important ? "important" : "")
         queueEdit({type: "style", selector: cssPath(el), property, value, important: !!important})
     }
+    function pxNumber(computedVal, fallback) {
+        const n = parseFloat(computedVal)
+        return Number.isFinite(n) ? Math.round(n) : fallback
+    }
 
     function openPanel(el) {
         closePanel();
@@ -288,8 +292,8 @@
             <button class="pt-close">Close</button>
         `;
 
-        const textInput = panel.querySelector(".pt-text-input")
-        if(textInput) {
+        if(txt) {
+            const textInput = panel.querySelector(".pt-text-input")
             textInput.value = el.textContent.trim();
             textInput.addEventListener("input", ()=> {
                 el.textContent = textInput.value;
@@ -299,8 +303,8 @@
             })
         }
 
-        const colorInput = panel.querySelector(".pt-color-input")
-        if(colorInput) {
+        if(txtClr) {
+            const colorInput = panel.querySelector(".pt-color-input")
             colorInput.value = rgbToHex(getComputedStyle(el).color)
             colorInput.addEventListener("input", (e) => {
                 el.style.color = e.target.value
@@ -308,31 +312,110 @@
             })
         }
 
-        const bgInput = panel.querySelector(".pt-bg-input");
-        if(bgInput){
+        if(bgClr){
+            const bgInput = panel.querySelector(".pt-bg-input");
             bgInput.value = rgbToHex(getComputedStyle(el).backgroundColor)
             bgInput.addEventListener("input", (e) => {
                 el.style.backgroundColor = e.target.value
                 queueEdit({type: "style", selector: cssPath(el), property: "background-color", value: e.target.value})
             })
         }
-        const hideBtn = panel.querySelector(".pt-hide")
-        if(hideBtn)
-            hideBtn.addEventListener("click", ()=>{ 
+
+        if(hide)
+            panel.querySelector(".pt-hide").addEventListener("click", ()=>{ 
                 el.style.display = "none";
                 queueEdit({type: "style", selector: cssPath(el), property: "display", value: "none"})
                 closePanel()
                 deselect()
             });
-        const delBtn = panel.querySelector(".pt-delete")
-        if(delBtn)
-            delBtn.addEventListener("click", ()=> {
+        if(del)
+            panel.querySelector(".pt-delete").addEventListener("click", ()=> {
                 const selectorVal = cssPath(el)
                 el.remove();
                 queueEdit({type: "remove", selector: selectorVal})
                 closePanel();
                 currentTarget = null;
             })
+        
+        if(border) {
+            const borderW = panel.querySelector(".pt-border-width")
+            const borderClr = panel.querySelector(".pt-border-color")
+            const css = getComputedStyle(el)
+            borderW.value = pxNumber(css.borderTopWidth, 1)
+            borderClr.value = rgbToHex(css.borderTopColor)
+            const applyBorder = () => applyStyle(el, "border", `${borderW.value || 0}px solid ${borderClr.value}`)
+            borderW.addEventListener("input", applyBorder)
+            borderClr.addEventListener("input", applyBorder)
+        }
+        if(borderRadius) {
+            const bRadius = panel.querySelector(".pt-radius-input")
+            bRadius.value = pxNumber(getComputedStyle(el).borderRadius, 0)
+            bRadius.addEventListener("input", ()=> applyStyle(el, "border-radius", `${bRadius.value || 0}px`))
+        }
+        if(opacity) {
+            const opacityInp = panel.querySelector(".pt-opacity-input")
+            opacityInp.value = getComputedStyle(el).opacity || "1"
+            opacityInp.addEventListener("input", ()=> applyStyle(el, "opacity", opacityInp.value))
+        }
+        if(fontSw) {
+            const fontInp = panel.querySelector(".pt-fontsize-input")
+            fontInp.value = pxNumber(getComputedStyle(el).fontSize, 16)
+            fontInp.addEventListener("input", ()=> applyStyle(el, "font-size", `${fontInp.value || 16}px`))
+            const fontWeight = panel.querySelector(".pt-fontweight-input")
+            const weight = getComputedStyle(el).fontWeight
+            fontWeight.value = ["400", "500", "800", "700", "900"].includes(weight) ? weight : "500"
+            fontWeight.addEventListener("change", ()=> applyStyle(el, "font-weight", fontWeight.value))
+        }
+        if(padding) {
+            const paddingInp = panel.querySelector(".pt-padding-input")
+            paddingInp.value = pxNumber(getComputedStyle(el).paddingTop, 0)
+            paddingInp.addEventListener("input", ()=> applyStyle(el, "padding", `${paddingInp.value || 0}px`))
+        }
+        if(margin) {
+            const marginInp = panel.querySelector(".pt-margin-input")
+            marginInp.value = pxNumber(getComputedStyle(el).marginTop, 0)
+            marginInp.addEventListener("input", ()=> applyStyle(el, "margin", `${marginInp.value || 0}px`))
+        }
+        if(size) {
+            const widthInp = panel.querySelector(".pt-width-input")
+            widthInp.value = Math.round(el.getBoundingClientRect().width)
+            widthInp.addEventListener("input", ()=> applyStyle(el, "width", `${widthInp.val || 0}px`))
+            const heightInp = document.querySelector(".pt-height-input")
+            heightInp.value = Math.round(el.getBoundingClientRect().height)
+            heightInp.addEventListener("input", ()=> applyStyle(el, "height", `${heightInp.value || 0}px`))
+        }
+        if(zIdx) {
+            const zIdxInp = panel.querySelector(".pt-zindex-input")
+            const zVal = getComputedStyle(el).zIndex
+            zIdxInp.value = zVal === "auto" ? 0 : zVal
+            zIdxInp.addEventListener("input", ()=> applyStyle(el, `"z-index", ${zIdxInp.value || 0}px`))
+        }
+        if(attribute) {
+            const nameInp = panel.querySelector(".pt-attr-name")
+            const valInp = panel.querySelector(".pt-attr-value")
+            const applyBtn = panel.querySelector(".pt-attr-apply")
+            const guessed = {A: "href", IMG: "src", INPUT: "placeholder", TEXTAREA: "placeholder"}[el.tagName] || ""
+            nameInp.value = guessed
+            valInp.value = guessed ? (el.getAttribute(guessed) || "") : ""
+            applyBtn.addEventListener("click", ()=> {
+                const name = nameInp.value.trim()
+                if(!name) 
+                    return
+                el.setAttribute(name, valInp.value)
+                queueEdit({type: "attribute", selector: cssPath(el), property: name, value: valInp.value})
+            })
+
+        }
+        if(forceShow) {
+            panel.querySelector(".pt-force-show").addEventListener("click", ()=> {
+                applyStyle(el, "display", "revert", true)
+                applyStyle(el, "visibility", "visible", true)
+                applyStyle(el, opacity, "1", true)
+                closePanel()
+                deselect()
+            })
+        }
+        
         panel.querySelector(".pt-close").addEventListener("click", ()=> {
             closePanel()
             deselect();
