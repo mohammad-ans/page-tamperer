@@ -10,7 +10,7 @@
     let pending = [];
     let active = false;
     let currentTarget = null;
-    let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true}
+    let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true, attribute: false, forceShow: false, opacity: false, border: false, padding: false, margin: false, borderRadius: false, size: false, fontSW: false, zIdx: false}
     let isTouchSession = false;
 
     function cssPath(el) {
@@ -222,6 +222,10 @@
             currentTarget.classList.remove(SELECTED_CLASS);
         currentTarget = null
     }
+    function applyStyle(el, property, value, important) {
+        e.style.setProperty(property, value, important ? "important" : "")
+        queueEdit({type: "style", selector: cssPath(el), property, value, important: !!important})
+    }
 
     function openPanel(el) {
         closePanel();
@@ -229,9 +233,6 @@
         panel.id = PANEL_ID
         panel.style.visibility = "hidden"
         document.documentElement.appendChild(panel)
-        const rect = el.getBoundingClientRect()
-        panel.style.top = `${window.scrollY + rect.bottom +6}px`
-        panel.style.left = `${window.scrollX + rect.left}px`
         const hasDirectText = Array.from(el.childNodes).some( (n) =>
             n.nodeType === Node.TEXT_NODE && n.textContent.trim()
         )
@@ -240,7 +241,19 @@
         const del = editOptions.delete
         const hide = editOptions.hide
         const txtClr = editOptions.textColor
-        const anyOn = txt || bgClr || del || hide || txtClr
+        const opacity = editOptions.opacity
+        const border = editOptions.border
+        const forceShow = editOptions.forceShow
+        const attribute = editOptions.attribute
+        const borderRadius = editOptions.borderRadius
+        const padding = editOptions.padding
+        const margin = editOptions.margin
+        const fontSw = editOptions.fontSW
+        const size = editOptions.size
+        const zIdx = editOptions.zIdx
+
+        const anyOn = txt || bgClr || del || hide || txtClr || opacity || border || forceShow
+        || attribute || borderRadius || padding || margin || fontSw || size || zIdx
 
         if (!anyOn) {
             panel.innerHTML = `
@@ -258,6 +271,18 @@
             ${txt ? `<input type="text" class="pt-text-input" />` : ""}
             ${txtClr && `<label>Text color <input type="color" class="pt-color-input" /></label>`}
             ${bgClr && `<label>Background <input type="color" class="pt-bg-input" /></label>`}
+            ${border && `<label>Border <input type="number" class="pt-border-width" min="0" style="width:50px"/> px<input type="color" class="pt-border-color"/></label>`}
+            ${borderRadius && `<label>Corner radius <input type="number" class="pt-radius-input" min="0" style="width:60px"/> px</label>`}
+            ${opacity && `<label>Opacity <input type="range" class="pt-opacity-input" min="0" max="1" step="0.05""/></label>`}
+            ${fontSw && `<label>Font size <input type="number" class="pt-fontsize-input" min="1" style="width:60px"/> px</label>`}
+            ${fontSw && `<label>Font weight <select class="pt-fontweight-input"><option value="400">Normal</options><option value="500">Medium</option><option value="700">Semi bold</option><option value="800">Bold</option><option value="900">Bolder</option></select></label>`}
+            ${padding && `<label>Padding <input type="number" class="pt-padding-input" min="0" style="width:60px"/> px</label>`}
+            ${margin && `<label>Margin <input type="number" class="pt-margin-input" min="0" style="width:60px"/> px</label>`}
+            ${size && `<label>Width <input type="number" class="pt-width-input" min="0" style="width:70px" /> px</label>`}
+            ${size && `<label>Height <input type="number" class="pt=height-input" min="0" style="width:70px"/> px</label>`}
+            ${zIdx && `<label>Z-Index <input type="number" class="pt-zindex-input" style="width:70px"/></label>`}
+            ${attribute && `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply>Set</button></div>`}
+            ${forceShow && `<button class="pt-force-shot">Force show</button>`}
             ${hide && `<button class="pt-hide">Hide Element</button>`}
             ${del && `<button class="pt-delete">Delete Element</button>`}
             <button class="pt-close">Close</button>
@@ -275,11 +300,13 @@
         }
 
         const colorInput = panel.querySelector(".pt-color-input")
-        colorInput.value = rgbToHex(getComputedStyle(el).color)
-        colorInput.addEventListener("input", (e) => {
-            el.style.color = e.target.value
-            queueEdit({type: "style", selector: cssPath(el), property: "color", value: e.target.value})
-        })
+        if(colorInput) {
+            colorInput.value = rgbToHex(getComputedStyle(el).color)
+            colorInput.addEventListener("input", (e) => {
+                el.style.color = e.target.value
+                queueEdit({type: "style", selector: cssPath(el), property: "color", value: e.target.value})
+            })
+        }
 
         const bgInput = panel.querySelector(".pt-bg-input");
         if(bgInput){
@@ -390,7 +417,7 @@
         pending = []
         console.log(`Page tamperer exited edit mode ${saved ? " (saved)" : ""}`)
     }
-    function enterEditMode() {
+    async function enterEditMode() {
         if(active)
             return
         active = true
