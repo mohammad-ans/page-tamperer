@@ -12,7 +12,27 @@
     let currentTarget = null;
     let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true, attribute: false, forceShow: false, opacity: false, border: false, padding: false, margin: false, borderRadius: false, size: false, fontSW: false, zIdx: false}
     let isTouchSession = false;
+    
+    const THEMES = {
+        "dark-theme": {
+            surface: "#08080c",
+            text: "#f5f5f5",
+            lowTxt: "rbg(167, 167, 167)",
+            inputBg: "#161620b8",
+            hoverBg: "#242433",
+            border: "rgba(255, 255, 255, 0.14"
+        },
+        "light-theme": {
+            surface: "#f5f4f2",
+            text: "#080808",
+            lowTxt: "gray",
+            inputBg: "#f5f4f2",
+            hoverBg: "white",
+            border: "rgba(0, 0, 0, 0.14)"
 
+        }
+    }
+    let theme = THEMES["dark-theme"]
     function cssPath(el) {
         if (!(el instanceof Element))
             return null
@@ -62,8 +82,8 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 2147483647;
-            background: #111827;
-            color: #fff;
+            background: ${theme.surface};
+            color: ${theme.text};
             font-family: system-ui, sans-serif;
             font-size: 13px;
             padding: 8px 12px;
@@ -71,7 +91,8 @@
             display: flex;
             gap: 8px;
             align-items: center;
-            box-shadow: 0 4px 16px rgba(0,0,0,.3);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            border: 1px solid ${theme.border};
         }
         #${TOOLBAR_ID} button {
             all: unset;
@@ -91,7 +112,8 @@
         }
         #${TOOLBAR_ID} input {
             all: unset;
-            background: #1F2937;
+            background: ${theme.inputBg};
+            color: ${theme.text}
             padding: 6px 8px;
             border-radius: 6px;
             width: 140px;
@@ -100,8 +122,8 @@
             all: initial;
             position: absolute;
             z-index: 2147483647;
-            background: #111827;
-            color: #fff;
+            background: ${theme.surface};
+            color: ${theme.text};
             font-family: system-ui, sans-serif;
             font-size: 12px;
             padding: 8px;
@@ -111,6 +133,10 @@
             gap: 6px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.3);
             min-width: 170px;
+            max-width: min(260px, calc(100vw - 16px));
+            max-height: min(70vh, calc(100vh - 24px));
+            overflow-y: auto;
+            border: 1px solid ${theme.border};
         }
         #${PANEL_ID} label {
             display: flex;
@@ -122,15 +148,17 @@
             cursor: pointer;
             padding: 6px 8px;
             border-radius: 6px;
-            background: #1F2937;
-            color: #fff;
+            background: ${theme.inputBg};
+            color: ${theme.text};
+            min-height: 20px;
         }
         #${PANEL_ID} button:hover {
-            background: #374151;
+            background: ${theme.hoverBg};
         }
         #${PANEL_ID} input[type=text] {
             all: unset;
-            background: #1F2937;
+            background: ${theme.inputBg};
+            color: ${theme.text};
             padding: 6px 8px;
             border-radius: 6px;
             width: 100%;
@@ -138,13 +166,37 @@
         }
         #${PANEL_ID} input[type=color] {
             width: 100%;
-            height: 28px;
+            height: 32px;
             border: none;
         }
         #${PANEL_ID} .pt-empty-panel{
             font-size: 12px;
             line-height: 1.4;
             max-width: 200px;
+            color: ${theme.lowTxt};
+        }
+        #${PANEL_ID} select{
+            all:unset;
+            background: ${theme.inputBg};
+            color: ${theme.text};
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #${PANEL_ID} .pt-attr{
+            display: flex;
+            gap: 4px;
+        }
+        #${PANEL_ID} .pt-attr input{
+            all: unset;
+            background: ${theme.inputBg};
+            color: ${theme.text};
+            padding: 8px;
+            border-radius: 6px;
+            width: 0;
+            flex: 1;
+            box-sizing: border-box;
         }
         `;
         document.documentElement.appendChild(style)
@@ -506,6 +558,7 @@
         active = true
         const settings = await PTStorage.getSettings()
         editOptions = settings.editOptions || editOptions
+        theme = THEMES[settings.theme] || THEMES["dark-theme"]
 
         injectBaseStyles();
         buildToolbar();

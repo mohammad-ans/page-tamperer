@@ -7,6 +7,8 @@ else{
     document.querySelector(".dark-theme").classList.add("selected-theme")
 }
 
+PTStorage.updateSettings({theme: themeCurr || "dark-theme"});
+
 function addGoBack(first, second, tagClass) {
     function toggleBtwFS(e) {
         if(first.checkVisibility()){

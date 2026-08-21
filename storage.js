@@ -2,6 +2,7 @@
     "use strict";
     const DEFAULT_SETTINGS = {
         automaticManipulation: true, allowScripts: true,
+        theme: "dark-theme",
         editOptions: {
             text: true,
             textColor: true,
