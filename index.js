@@ -86,6 +86,7 @@ async function editPg() {
         return;
     try{
         await chrome.tabs.sendMessage(tab.id, {type: "ENTER_EDIT_MODE"});
+        editPgBtn.textContent = "Editing..."
         window.close();
     }
     catch(err) {

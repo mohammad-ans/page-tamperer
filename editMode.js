@@ -21,7 +21,7 @@
             lowTxt: "gray",
             inputBg: "#161620b8",
             hoverBg: "#242433",
-            border: "rgba(255, 255, 255, 0.14"
+            border: "rgba(255, 255, 255, 0.14)"
         },
         "light-theme": {
             surface: "#f5f4f2",
@@ -178,6 +178,17 @@
             border-radius: 6px;
             width: 100%;
             box-sizing: border-box;
+        }
+        #${PANEL_ID} textarea{
+            all: unset;
+            background: ${theme.inputBg};
+            color: ${theme.text};
+            padding: 6px 8px;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            resize: none;
+            height: 24px;
         }
         #${PANEL_ID} input[type=color] {
             width: 100%;
@@ -364,23 +375,23 @@
             return
         }
         panel.innerHTML = `
-            ${txt ? `<input type="text" class="pt-text-input" />` : ""}
-            ${txtClr && `<label>Text color <input type="color" class="pt-color-input" /></label>`}
-            ${bgClr && `<label>Background <input type="color" class="pt-bg-input" /></label>`}
-            ${border && `<label>Border <input type="number" class="pt-border-width" min="0" style="width:50px"/> px<input type="color" class="pt-border-color"/></label>`}
-            ${borderRadius && `<label>Corner radius <input type="number" class="pt-radius-input" min="0" style="width:60px"/> px</label>`}
-            ${opacity && `<label>Opacity <input type="range" class="pt-opacity-input" min="0" max="1" step="0.05""/></label>`}
-            ${fontSw && `<label>Font size <input type="number" class="pt-fontsize-input" min="1" style="width:60px"/> px</label>`}
-            ${fontSw && `<label>Font weight <select class="pt-fontweight-input"><option value="400">Normal</options><option value="500">Medium</option><option value="700">Semi bold</option><option value="800">Bold</option><option value="900">Bolder</option></select></label>`}
-            ${padding && `<label>Padding <input type="number" class="pt-padding-input" min="0" style="width:60px"/> px</label>`}
-            ${margin && `<label>Margin <input type="number" class="pt-margin-input" min="0" style="width:60px"/> px</label>`}
-            ${size && `<label>Width <input type="number" class="pt-width-input" min="0" style="width:70px" /> px</label>`}
-            ${size && `<label>Height <input type="number" class="pt=height-input" min="0" style="width:70px"/> px</label>`}
-            ${zIdx && `<label>Z-Index <input type="number" class="pt-zindex-input" style="width:70px"/></label>`}
-            ${attribute && `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply>Set</button></div>`}
-            ${forceShow && `<button class="pt-force-shot">Force show</button>`}
-            ${hide && `<button class="pt-hide">Hide Element</button>`}
-            ${del && `<button class="pt-delete">Delete Element</button>`}
+            ${txt ? `<textarea class="pt-text-input" ></textarea>` : ""}
+            ${txtClr ? `<label>Text color <input type="color" class="pt-color-input" /></label>`: ""}
+            ${bgClr ? `<label>Background <input type="color" class="pt-bg-input" /></label>`: ""}
+            ${border ? `<label>Border <input type="number" class="pt-border-width" min="0" style="width:50px"/> px<input type="color" class="pt-border-color"/></label>`: ""}
+            ${borderRadius ? `<label>Corner radius <input type="number" class="pt-radius-input" min="0" style="width:60px"/> px</label>`: ""}
+            ${opacity ? `<label>Opacity <input type="range" class="pt-opacity-input" min="0" max="1" step="0.05""/></label>`: ""}
+            ${fontSw ? `<label>Font size <input type="number" class="pt-fontsize-input" min="1" style="width:60px"/> px</label>`: ""}
+            ${fontSw ? `<label>Font weight <select class="pt-fontweight-input"><option value="400">Normal</options><option value="500">Medium</option><option value="700">Semi bold</option><option value="800">Bold</option><option value="900">Bolder</option></select></label>`: ""}
+            ${padding ? `<label>Padding <input type="number" class="pt-padding-input" min="0" style="width:60px"/> px</label>` : ""}
+            ${margin ? `<label>Margin <input type="number" class="pt-margin-input" min="0" style="width:60px"/> px</label>` : ""}
+            ${size ? `<label>Width <input type="number" class="pt-width-input" min="0" style="width:70px" /> px</label>` : ""}
+            ${size ? `<label>Height <input type="number" class="pt=height-input" min="0" style="width:70px"/> px</label>` : ""}
+            ${zIdx ? `<label>Z-Index <input type="number" class="pt-zindex-input" style="width:70px"/></label>` : ""}
+            ${attribute ? `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply>Set</button></div>` : ""}
+            ${forceShow ? `<button class="pt-force-shot">Force show</button>`: ""}
+            ${hide ? `<button class="pt-hide">Hide Element</button>` : ""}
+            ${del ? `<button class="pt-delete">Delete Element</button>` : ""}
             <button class="pt-close">Close</button>
         `;
 
@@ -590,8 +601,13 @@
     }
     chrome.runtime.onMessage.addListener((message, sender, response) => {
         if(message && message.type === "ENTER_EDIT_MODE") {
-            enterEditMode()
-            response({ok : true})
+            if(active) {
+                response({ok: false})
+            }
+            else{
+                enterEditMode()
+                response({ok : true})
+            }
         }
         if (message && message.type === "EXIT_EDIT_MODE") {
             exitEditMode(false)
