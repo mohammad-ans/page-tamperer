@@ -135,17 +135,33 @@ async function initSettings() {
         const updated = await PTStorage.updateSettings({allowScripts: nxtVal});
         reflect(scriptsToggle, updated.allowScripts);
     })
+    let countOn = 0;
     const editOpts = settings.editOptions || {};
     for (const [key, id] of Object.entries(EDIT_OPTION_IDS)) {
         const btn = document.querySelector(`#${id}`)
         if(!btn)
             continue
-        btn.classList.toggle("toggle_on", !!editOpts[key])
+        if(editOpts[key] && countOn < 5){
+            btn.classList.toggle("toggle_on", true)
+            countOn++
+        }
+        else if(editOpts[key]){
+                await PTStorage.updateSettings({editOptions: {...editOpts, [key]: false}})
+        }
 
         btn.addEventListener("click", async () => {
             const curr = await PTStorage.getSettings()
             const currOpts = curr.editOptions || {}
             const nxtVal = !btn.classList.contains("toggle_on")
+            console.log(countOn)
+            if(nxtVal && countOn == 5){
+                alert("Max 5 options are allowed")
+                return
+            }
+            else if(nxtVal)
+                countOn++
+            else
+                countOn--
             const updated = await PTStorage.updateSettings({editOptions: {...currOpts, [key] : nxtVal}})
             btn.classList.toggle("toggle_on", !!updated.editOptions[key])
         })

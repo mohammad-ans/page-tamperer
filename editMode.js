@@ -81,12 +81,12 @@
         styleEl.id = STYLE_ID;
         styleEl.textContent = `
         .${HIGHLIGHT_CLASS} {
-            outline: 2px solid #5850EC !important;
+            outline: 2px solid #7c3aed !important;
             outline-offset: -1px !important;
             cursor: pointer !important;
         }
         .${SELECTED_CLASS} {
-            outline: 2px solid #16A34A !important;
+            outline: 2px solid #39FF14 !important;
             outline-offset: -1px !important;
         }
         #${TOOLBAR_ID} {
@@ -118,11 +118,11 @@
             background-color: ${theme.inputBg}
         }
         #${TOOLBAR_ID} .pt-save{
-            background-color: #16A34A;
+            background-color: #2563eb;
             color: #fff;
         }
         #${TOOLBAR_ID} .pt-exit{
-            background-color: #374151;
+            background-color: #242423;
             color: #fff;
         }
         #${TOOLBAR_ID} input {
@@ -169,6 +169,12 @@
         }
         #${PANEL_ID} button:hover {
             background: ${theme.hoverBg};
+        }
+        #${PANEL_ID} input {
+            background: ${theme.inputBg};
+            color: ${theme.text};
+            padding: 6px 8px;
+            border-radius: 6px;
         }
         #${PANEL_ID} input[type=text] {
             all: unset;
@@ -301,8 +307,8 @@
         currentTarget = null
     }
     function applyStyle(el, property, value, important) {
-        e.style.setProperty(property, value, important ? "important" : "")
-        queueEdit({type: "style", selector: cssPath(el), property, value, important: !!important})
+        el.style.setProperty(property, value, important ? "important" : "")
+        queueEdit({type: "style", selector: cssPath(el), property: property, value: value, important: !!important})
     }
     function pxNumber(computedVal, fallback) {
         const n = parseFloat(computedVal)
