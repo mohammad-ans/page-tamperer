@@ -9,6 +9,8 @@
     --text-color: #b197fc;
     --low-text: rgb(167, 167, 167);
     --nav-text: #f5f5f5;
+    --hover-panel: #242433;
+    --edit-border: rgba(255, 255, 255, 0.14);
 }
 [data-theme="light-theme"]{
     --ring-color : #2563eb;
@@ -20,6 +22,8 @@
     --button-bg: #080808;
     --text-color: black;
     --nav-text: black;
+    --hover-panel: white;
+    --edit-border: rgba(0, 0, 0, 0.14);
 }
 *{
     box-sizing: border-box;

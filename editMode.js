@@ -12,12 +12,13 @@
     let currentTarget = null;
     let editOptions = {text: true, textColor: true, backgroundColor: true, hide: true, delete: true, attribute: false, forceShow: false, opacity: false, border: false, padding: false, margin: false, borderRadius: false, size: false, fontSW: false, zIdx: false}
     let isTouchSession = false;
+    let styleEl = null;
     
     const THEMES = {
         "dark-theme": {
             surface: "#08080c",
             text: "#f5f5f5",
-            lowTxt: "rbg(167, 167, 167)",
+            lowTxt: "gray",
             inputBg: "#161620b8",
             hoverBg: "#242433",
             border: "rgba(255, 255, 255, 0.14"
@@ -29,10 +30,23 @@
             inputBg: "#f5f4f2",
             hoverBg: "white",
             border: "rgba(0, 0, 0, 0.14)"
-
         }
     }
     let theme = THEMES["dark-theme"]
+
+    function removeTheme() {
+        if(styleEl)
+            document.documentElement.removeChild(styleEl)
+    }
+    async function updateTheme() {
+        if(!active)
+            return
+        removeTheme()
+        const settings = await PTStorage.getSettings()
+        if (settings)
+            theme = THEMES[settings.theme] || THEMES["dark-theme"]
+        injectBaseStyles();
+    }
     function cssPath(el) {
         if (!(el instanceof Element))
             return null
@@ -63,9 +77,9 @@
     function injectBaseStyles() {
         if(document.getElementById(STYLE_ID))
             return
-        const style = document.createElement("style");
-        style.id = STYLE_ID;
-        style.textContent = `
+        styleEl = document.createElement("style");
+        styleEl.id = STYLE_ID;
+        styleEl.textContent = `
         .${HIGHLIGHT_CLASS} {
             outline: 2px solid #5850EC !important;
             outline-offset: -1px !important;
@@ -101,13 +115,14 @@
             border-radius: 6px;
             font-family: inherit;
             font-size: 12px;
+            background-color: ${theme.inputBg}
         }
         #${TOOLBAR_ID} .pt-save{
-            background: #16A34A;
+            background-color: #16A34A;
             color: #fff;
         }
         #${TOOLBAR_ID} .pt-exit{
-            background: #374151;
+            background-color: #374151;
             color: #fff;
         }
         #${TOOLBAR_ID} input {
@@ -199,7 +214,7 @@
             box-sizing: border-box;
         }
         `;
-        document.documentElement.appendChild(style)
+        document.documentElement.appendChild(styleEl)
     }
 
     function buildToolbar() {
@@ -281,6 +296,31 @@
     function pxNumber(computedVal, fallback) {
         const n = parseFloat(computedVal)
         return Number.isFinite(n) ? Math.round(n) : fallback
+    }
+
+    function panelPos(panel, el) {
+        const targetRect = el.getBoundingClientRect()
+        const panelRect = panel.getBoundingClientRect()
+        const margin = 8;
+        const vpW = window.innerWidth
+        const vpH = window.innerHeight
+
+        let top = targetRect.bottom + 6;
+        if(top + panelRect.height + margin > vpH)
+            top = targetRect.top - panelRect.height - 6;
+        top = Math.max(margin, Math.min(top, vpH - panelRect.height - margin))
+        let left = targetRect.left;
+        left = Math.max(margin, Math.min(left, vpW - panelRect.width - margin))
+
+        panel.style.top = `${top}px`
+        panel.style.left = `${left}px`
+        panel.style.visibility = "visible"
+    }
+
+    function closePanel() {
+        const existing = document.getElementById(PANEL_ID)
+        if(existing)
+            existing.remove()
     }
 
     function openPanel(el) {
@@ -474,29 +514,6 @@
         })
         panelPos(panel, el)
     }
-    function panelPos(panel, el) {
-        const targetRect = el.getBoundingClientRect()
-        const panelRect = panel.getBoundingClientRect()
-        const margin = 8;
-        const vpW = window.innerWidth
-        const vpH = window.innerHeight
-
-        let top = targetRect.bottom + 6;
-        if(top + panelRect.height + margin > vpH)
-            top = targetRect.top - panelRect.height - 6;
-        top = Math.max(margin, Math.min(top, vpH - panelRect.height - margin))
-        let left = targetRect.left;
-        left = Math.max(margin, Math.min(left, vpW - panelRect.width - margin))
-
-        panel.style.top = `${top}px`
-        panel.style.left = `${left}px`
-        panel.style.visibility = "visible"
-    }
-    function closePanel() {
-        const existing = document.getElementById(PANEL_ID)
-        if(existing)
-            existing.remove()
-    }
 
     function queueEdit(edit) {
         const i = pending.findIndex((e) =>
@@ -539,6 +556,7 @@
         isTouchSession = false
         deselect()
         closePanel()
+
         document.removeEventListener("mouseover", onMouseOver, true)
         document.removeEventListener("mouseout", onMouseOut, true)
         document.removeEventListener("click", onClick, true)
@@ -578,6 +596,9 @@
         if (message && message.type === "EXIT_EDIT_MODE") {
             exitEditMode(false)
             response({ok: true})
+        }
+        if(message && message.type === "CHANGE_THEME"){
+            updateTheme()
         }
     })
 })()

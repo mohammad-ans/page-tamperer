@@ -9,7 +9,6 @@
         const loc = location.hostname
         const site = await PTStorage.getSite(loc)
         const scripts = site.scripts.filter((s) => s.enabled)
-        console.log(`${scripts.length}`)
         for (const script of scripts) {
             applyScript(script)
         }

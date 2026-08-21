@@ -27,13 +27,24 @@ function addGoBack(first, second, tagClass) {
 }
 
 
-function changeTheme(e) {
+async function changeTheme(e) {
     const currTheme = document.querySelector(".selected-theme");
     currTheme.classList.remove("selected-theme");
     const property = e.currentTarget.classList[0];
     e.currentTarget.classList.add("selected-theme");
     document.documentElement.setAttribute("data-theme", property);
-    localStorage.setItem("theme", property)
+    localStorage.setItem("theme", property);
+
+    PTStorage.updateSettings({theme: property || "dark-theme"});
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    if(!tab || !tab.id)
+        return;
+    try{
+        await chrome.tabs.sendMessage(tab.id, {type: "CHANGE_THEME"});
+    }
+    catch{
+
+    }
 }
 const themes = document.querySelector(".theme-boxes").children;
 for(const theme of themes){
