@@ -508,7 +508,7 @@ async function showDashboard(){
         name.textContent = host
         const countEl = document.createElement("div")
         countEl.className = "dashboard-site-count"
-        countEl.textContent = `${count}/${scripts.length} enabled`
+        countEl.textContent = `${count} out of ${scripts.length} enabled`
 
         row.append(name, countEl)
         listEl.append(row)
