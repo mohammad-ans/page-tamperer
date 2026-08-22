@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div class="main-page">
+    <div class="main-page" hidden>
     <nav>
         <div class="first-part">
             <p>Page Tamperer</p>
@@ -119,7 +119,7 @@
                             <div class="line2"></div>
                             <div class="line3"></div>
                         </div>
-                        <div class="selected-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-3"><path d="M20 6 9 17l-5-5"></path></svg></div>
+                        <div class="selected-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></div>
                     </div>
                     <p>Dark Theme</p>
                     <p class="low-part">Dark & Neon</p>
@@ -409,7 +409,7 @@
         </main>
     </div>
 
-    <div class="add-script-page" hidden>
+    <div class="add-script-page">
         <nav>
             <div class="first-part">
                 <button class="back-icon back-button" >
@@ -437,8 +437,8 @@
             </div>
             <div class="input-script-details">
                 <label>Type</label>
-                <button class="type-option" data-type="js">Javascript</button>
-                <button class="type-option" data-type="css">CSS</button>
+                <button class="type-option toggle_on js-btn" data-type="js">Javascript <p class="circle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5"></path></svg></p></button>
+                <button class="type-option css-btn" data-type="css">CSS <p class="circle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ><path d="M20 6 9 17l-5-5"></path></svg></p></button>
             </div>
             <div class="input-script-details">
                 <label>Run</label>
@@ -454,7 +454,7 @@
                     <button id="upload-script-file">Upload File</button>
                     <input type="file" id="script-file-input" accept=".js,text/javascript" hidden>
                 </div>
-                <textarea id="script-code" rows="20" placeholder="// your code here"></textarea>
+                <textarea id="script-code" rows="20" placeholder="Code here"></textarea>
             </div>
             <div class="submit-area">
                 <div class="save-status" id="save-script-status"></div>

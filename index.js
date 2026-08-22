@@ -222,8 +222,11 @@ function resolveHost(url) {
         currentType = type
         typeOpts.forEach((btn) => btn.classList.toggle("selected", btn.dataset.type === type))
         fileInput.accept = type === "css" ? ".css,text/css" : ".js,text/javascript"
+        addScriptPg.querySelector(".toggle_on").classList.toggle("toggle_on")
+        addScriptPg.querySelector(`.${type}-btn`).classList.toggle("toggle_on")
+        
     }
-    typeOpts.forEach((btn) => btn.addEventListener("click", ()=> setType(btn.dataset.type)))
+    typeOpts.forEach((btn) => btn.addEventListener("click", (e)=> setType(btn.dataset.type)))
     setType("js")
 
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true})
@@ -278,9 +281,10 @@ function resolveHost(url) {
                 runAt: runAtSelect.value,
                 enabled: true
             })
-            status.textContent = `Saved for ${host}`
+            status.textContent = `Saved for ${host}, reload to see results if current site.`
             nameInput.value = ""
             codeTextArea.value = ""
+            saveBtn.textContent = "Save Script"
         }
         catch(err) {
             console.error("Failed to save script", err)
