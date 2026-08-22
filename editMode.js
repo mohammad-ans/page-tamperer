@@ -135,7 +135,7 @@
         }
         #${PANEL_ID} {
             all: initial;
-            position: absolute;
+            position: fixed;
             z-index: 2147483647;
             background: ${theme.surface};
             color: ${theme.text};
@@ -395,7 +395,7 @@
             ${size ? `<label>Height <input type="number" class="pt=height-input" min="0" style="width:70px"/> px</label>` : ""}
             ${zIdx ? `<label>Z-Index <input type="number" class="pt-zindex-input" style="width:70px"/></label>` : ""}
             ${attribute ? `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply>Set</button></div>` : ""}
-            ${forceShow ? `<button class="pt-force-shot">Force show</button>`: ""}
+            ${forceShow ? `<button class="pt-force-show">Force show</button>`: ""}
             ${hide ? `<button class="pt-hide">Hide Element</button>` : ""}
             ${del ? `<button class="pt-delete">Delete Element</button>` : ""}
             <button class="pt-close">Close</button>
@@ -404,7 +404,8 @@
         if(txt) {
             const textInput = panel.querySelector(".pt-text-input")
             textInput.value = el.textContent.trim();
-            textInput.addEventListener("input", ()=> {
+            textInput.addEventListener("input", (e)=> {
+                e.stopPropagation()
                 el.textContent = textInput.value;
                 queueEdit({
                     type: "text", selector: cssPath(el), value: textInput.value
