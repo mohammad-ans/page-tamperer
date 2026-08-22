@@ -46,7 +46,8 @@ body{
     justify-content: space-between;
     margin-top: 8px;
     margin-bottom: 8px;
-    padding: 0px 4px;
+    padding: 0px 12px;
+    padding-top: 8px;
 }
 nav .first-part{
     display: flex;
@@ -86,6 +87,7 @@ nav .first-part{
     margin-top: 8px;
     display: flex;
     gap: 12px;
+    padding: 0px 8px;
 }
 .theme-boxes > div{
     display: flex;
@@ -178,6 +180,7 @@ nav .first-part{
     visibility: visible;
 }
 .main-settings{
+    padding: 0px 8px;
     margin-top: 16px;
     margin-bottom: 16px;
 }
@@ -315,6 +318,7 @@ nav .first-part{
     text-decoration: none;
 }
 .live-edit-settings{
+    padding: 0px 8px;
     margin-bottom: 16px;
 }
 .live-edit-settings .settings{
@@ -771,9 +775,14 @@ nav{
     background-color: transparent;
 }
 .settings-page{
-    padding: 8px;
     position: relative;
 }
 .running-scripts-page, .all-scripts-page, .dashboard main{
     padding: 8px;
+}
+.scripts-settings{
+    padding: 0px 8px;
+}
+.about-section{
+    padding: 0px 8px 8px 8px;
 }
