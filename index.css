@@ -34,7 +34,6 @@
 }
 body{
     background-color: var(--background);
-    padding: 8px;
     height: 600px;
     width: 400px;
     color: var(--text-color);
@@ -730,17 +729,17 @@ nav{
 }
 .settings-overlay{
     position: fixed;
-    width: 390px;
+    width: 400px;
     height: 600px;
     background-color: rgb(11, 11, 18, 0.5);
     z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
     display: none;
 }
 .clear-confirm{
+    margin: auto;
     min-height: 160px;
     width: 85%;
     background-color: var(--hover-panel);
@@ -772,5 +771,9 @@ nav{
     background-color: transparent;
 }
 .settings-page{
+    padding: 8px;
     position: relative;
+}
+.running-scripts-page, .all-scripts-page, .dashboard main{
+    padding: 8px;
 }

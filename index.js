@@ -170,24 +170,19 @@ async function initSettings() {
 initSettings();
 
 (function initClearAll() {
-    const clearBtn = document.querySelector("#clear_scripts");
-    let armed = false;
-    let resetTimer = null;
-
-    clearBtn.addEventListener("click", async () => {
-        if(!armed){
-            armed = true
-            clearBtn.classList.add("confirm-armed")
-            resetTimer = setTimeout(() => {
-                armed = false
-                clearBtn.classList.remove("confirm-armed")
-            }, 3000)
-            return;
-        }
-        clearTimeout(resetTimer)
-        armed = false
-        clearBtn.classList.remove("confirm-armed")
+    const clearBtn = settingsPg.querySelector("#clear_scripts");
+    const overlay = settingsPg.querySelector(".settings-overlay")
+    const clearConfirm = overlay.querySelector(".confirm-clear")
+    clearConfirm.addEventListener("click", async ()=> {
+        clearConfirm.textContent = "Clearing..."
         await PTStorage.clearAll()
+        overlay.style.display = "none"
+        clearConfirm.textContent = "Yes"
+    })
+    overlay.querySelector(".cancel-clear").addEventListener("click", ()=> overlay.style.display = "none")
+    clearBtn.addEventListener("click", () => {
+        overlay.style.display = "flex"
+
     })
 })();
 
