@@ -324,10 +324,10 @@ function buildScriptRow(script, onChange) {
     meta.className = "single-script-meta"
     const site = document.createElement("span")
     site.className = "single-script-site"
-    site.textContent = script.host
+    site.textContent = `Site: ${script.host}`
     const type = document.createElement("span")
     type.className = "single-script-type"
-    type.textContent = typeLabels[script.type] || script.type
+    type.textContent = `Type: ${typeLabels[script.type] || script.type}`
     const name = document.createElement("div")
     name.className = "single-script-name"
     name.textContent = script.name
