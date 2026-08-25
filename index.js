@@ -524,3 +524,63 @@ function goTo(close, open) {
         showAllScripts()
     })
 })()
+
+
+const PERMISSIONS = {permissions: ["identity"], origins: ["https://www.googleapis.com/*", "https://accounts.google.com/*"]}
+
+function getAuthToken(flag) {
+    return new Promise((resolve, reject) => {
+        chrome.identity.getAuthToken({flag}, (token) => {
+            if (chrome.runtime.lastError || !token)
+                reject(chrome.runtime.lastError || new Error("No token returned"))
+            else
+                resolve(token)
+        })
+    })
+}
+
+async function checkDriveConnection() {
+    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
+    if(!granted)
+        return null
+    try{
+        await getAuthToken(false)
+        const profile = await new Promise((resolve) => chrome.identity.getProfileUserInfo(resolve))
+        return {email: profile.email || "Your account"}
+    }
+    catch{
+        return null
+    }
+}
+
+(function initDrive() {
+    const accTxt = exportScripts.querySelector(".drive-account-text")
+    const connectBtn = exportScripts.querySelector("#drive-connect-btn")
+    const disconnectBtn = exportScripts.querySelector("#drive-disconnet-btn")
+    const backUp = exportScripts.querySelector("#drive-backup-btn")
+    const restoreBtn = exportScripts.querySelector("#drive-restore-btn")
+
+    function driveConnected(email) {
+        accTxt.textContent = `Connected as ${email}`
+        connectBtn.hidden = true
+        disconnectBtn.hidden = false
+        backUp.disabled = false
+        restoreBtn.disabled = false
+    }
+    function driveDisconnected() {
+        accTxt.textContent = "Connect to drive to backup"
+        connectBtn.hidden = false
+        disconnectBtn.hidden = true
+        backUp.disabled = true
+        restoreBtn.disabled = true
+    }
+
+    (async function initState() {
+        const state = await checkDriveConnection()
+        if(state)
+            driveConnected(state.email)
+        else
+            driveDisconnected()
+    })()
+
+})

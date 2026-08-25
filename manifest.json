@@ -19,6 +19,10 @@
 
  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "downloads"],
  "host_permissions": ["<all_urls>"],
+ "optional_permissions": ["identity"],
+ "optional_host_permissions": ["https://www.googleapis.com/*", "https://accounts.google.com/*"],
+ "oauth2": {"client_id": ".apps.googleusercontent.com", 
+   "scopes": ["https://www.googleapis.com/auth/drive.appdata"]},
  "background": {
     "service_worker": "background.js"
  },
