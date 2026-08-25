@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div class="main-page">
+    <div class="main-page" hidden>
     <nav>
         <div class="first-part">
             <p>Page Tamperer</p>
@@ -329,7 +329,7 @@
                 </div>
             </div>
     </div>
-    <div class="export-scripts" hidden>
+    <div class="export-scripts">
         <nav>
             <div class="first-part">
                 <button class="back-icon back-button"><svg class="back-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -354,6 +354,21 @@
             </div>
         </div>
         <div class="export-status" id="export-status"></div>
+        <div class="separator"></div>
+        <div class="drive-backup">
+            <div class="heading">Google Drive Backup</div>
+            <div class="low-part">Saves to hidden app-only folder in your own drive. Only this extension can read it.</div>
+            <div class="drive-account-status">
+                <p class="drive-account-text">Not connected</p>
+                <button id="drive-connect-btn">Connect Google Account</button>
+                <button id="drive-disconnect-btn" hidden>Disconnect</button>
+            </div>
+            <div class="drive-backup-actions">
+                <button id="drive-backup-btn">Back up to drive</button>
+                <button id="drive-restore-btn">Restore from drive</button>
+            </div>
+            <div class="drive-status" id="drive-stats"></div>
+        </div>
     </div>
     <div class="dashboard" hidden>
         <header>

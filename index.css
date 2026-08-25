@@ -786,3 +786,49 @@ nav{
 .about-section{
     padding: 0px 8px 8px 8px;
 }
+.export-scripts .export-status{
+    margin-bottom: 24px;
+    margin-top: 4px;
+}
+.export-scripts .drive-backup{
+    margin-top: 16px;
+}
+.export-scripts .low-part{
+    color: var(--low-text);
+    font-size: 0.8rem;
+    margin-top: 2px;
+    font-family: monospace;
+}
+.drive-account-text{
+    margin: 16px auto;
+}
+.drive-account-status{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.drive-account-status button{
+    background-color: transparent;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.drive-backup-actions{
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-around;
+    gap: 6px;
+}
+.drive-backup-actions button{
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--text-color);
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+.drive-backup .heading{
+    font-weight: bold;
+}
