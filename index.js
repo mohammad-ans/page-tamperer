@@ -527,6 +527,7 @@ function goTo(close, open) {
 
 
 const PERMISSIONS = {permissions: ["identity"], origins: ["https://www.googleapis.com/*", "https://accounts.google.com/*"]}
+const DRIVE_FILENAME = "page-tamperer-backup.json"
 
 function getAuthToken(flag) {
     return new Promise((resolve, reject) => {
@@ -550,6 +551,35 @@ async function checkDriveConnection() {
     }
     catch{
         return null
+    }
+}
+
+async function ensureDriveAccess(){
+    const alreadyGranted = await new Promise((resolve) => {
+        chrome.permissions.contains(PERMISSIONS, (result) => resolve(result))
+    })
+    if(!alreadyGranted) {
+        const granted = await new Promise((resolve) => {
+            chrome.permissions.request(PERMISSIONS, (result) => resolve(result))
+        })
+        if(!granted)
+            throw new Error("Drive permissions were not granted")
+    }
+    return getAuthToken(true)
+}
+
+async function disconnectDrive() {
+    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS))
+    if(granted) {
+        try{
+            const token = await getAuthToken(false)
+            await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`)
+            chrome.identity.removeCachedToken({token}, () => {})
+        }
+        catch{
+
+        }
+        await new Promise((resolve) => chrome.permissions.remove(PERMISSIONS, resolve))
     }
 }
 
@@ -583,4 +613,59 @@ async function checkDriveConnection() {
             driveDisconnected()
     })()
 
+    connectBtn.addEventListener("click", async () => {
+        connectBtn.disabled = true
+        accTxt.textContent = "Waiting for Google sign-in..."
+        try{
+            await ensureDriveAccess()
+            const profile = await new Promise((resolve) => chrome.identity.getProfileUserInfo(resolve))
+            driveConnected(profile.email || "Your account")
+        }
+        catch(err){
+            console.error("Drive connecting failed", err)   
+            accTxt.textContent = "Could not connect. See console"
+        }
+        finally{
+            connectBtn.disabled = false
+        }
+    })
+
+    disconnectBtn.addEventListener("click", async () => {
+        disconnectBtn.disabled = true
+        accTxt.textContent = "Disconnecting..."
+        try{
+            await disconnectDrive()
+            driveDisconnected()
+            accTxt.textContent = "Disconnected"
+        }
+        catch(err){
+            console.error("Drive disconnect failed", err)
+            accTxt.textContent = "Could not disconnect. See console"
+        }
+        finally{
+            disconnectBtn.disabled = false
+        }
+    })
+    backUp.addEventListener("click", async () => {
+        backUp.disabled = true
+        accTxt.textContent = "Backing up..."
+        try{
+            const token = await ensureDriveAccess()
+        }
+        catch{}
+        finally{
+            backUp.disabled = false
+        }
+    })
+    restoreBtn.addEventListener("click", async () => {
+        restoreBtn.disabled = true
+        accTxt.textContent = "Looking for backup..."
+        try{
+            const token = await ensureDriveAccess()
+        }
+        catch{}
+        finally{
+            restoreBtn.disabled = false
+        }
+    })
 })
