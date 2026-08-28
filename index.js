@@ -526,12 +526,12 @@ function goTo(close, open) {
 })()
 
 
-const PERMISSIONS = {permissions: ["identity"], origins: ["https://www.googleapis.com/*", "https://accounts.google.com/*"]}
+const PERMISSIONS = {permissions: ["identity"]}
 const DRIVE_FILENAME = "page-tamperer-backup.json"
 
-function getAuthToken(flag) {
+function getAuthToken(interactive) {
     return new Promise((resolve, reject) => {
-        chrome.identity.getAuthToken({flag}, (token) => {
+        chrome.identity.getAuthToken({interactive}, (token) => {
             if (chrome.runtime.lastError || !token)
                 reject(chrome.runtime.lastError || new Error("No token returned"))
             else
@@ -541,7 +541,7 @@ function getAuthToken(flag) {
 }
 
 async function checkDriveConnection() {
-    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
+    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, (result) => resolve(result)))
     if(!granted)
         return null
     try{
@@ -582,11 +582,54 @@ async function disconnectDrive() {
         await new Promise((resolve) => chrome.permissions.remove(PERMISSIONS, resolve))
     }
 }
+async function uploadDriveFile(token, existingId, jsonString) {
+    if(existingId){
+        const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=media`, {
+            method: "PATCH",
+            headers: {Authorization: `Bearer ${token}`, "Content-Type": "application/json"},
+            body: jsonString
+        })
+        if(!res.ok)
+            throw new Error(`Drive update failed: ${res.status}`)
+        return res.json()
+    }
+    const boundary = "pt_boundary_" + Date.now()
+    const metadata = {name: DRIVE_FILENAME, parents: ["appDataFolder"]}
+    const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\nContent-Type: application/json\r\n\r\n${jsonString}\r\n--${boundary}--` 
+    const res = await fetch("https://www.googleapis.com/drive/v3/files?uploadType=multipart", {
+        method: "POST",
+        headers: {Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}`},
+        body
+    })
+    if (!res.ok)
+        throw new Error(`Drive create failed: ${res.status}`)
+    return res.json()
+}
+
+async function downloadBackup(token, fileId) {
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: {Authorization: `Bearer ${token}`}
+    })
+    if (!res.ok)
+        throw new Error(`Drive download failed: ${res.status}`)
+    return res.json()
+}
+
+async function findDriveFile(token) {
+    const query = encodeURIComponent(`name=${DRIVE_FILENAME}`)
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${query}&fields=files(id,name)`,
+        {headers: {Authorization: `Bearer ${token}`}}
+    )
+    if (!res.ok)
+        throw new Error(`Drive list failed: ${token}`)
+    const data = await res.json()
+    return (data.files && data.files[0]) || null
+}
 
 (function initDrive() {
     const accTxt = exportScripts.querySelector(".drive-account-text")
     const connectBtn = exportScripts.querySelector("#drive-connect-btn")
-    const disconnectBtn = exportScripts.querySelector("#drive-disconnet-btn")
+    const disconnectBtn = exportScripts.querySelector("#drive-disconnect-btn")
     const backUp = exportScripts.querySelector("#drive-backup-btn")
     const restoreBtn = exportScripts.querySelector("#drive-restore-btn")
 
@@ -651,8 +694,16 @@ async function disconnectDrive() {
         accTxt.textContent = "Backing up..."
         try{
             const token = await ensureDriveAccess()
+            const snapshot = await PTStorage.exportSnapshot()
+            const existing = await findDriveFile(token)
+            await uploadDriveFile(token, existing ? existing.id : null, JSON.stringify(snapshot))
+            const scriptCount = Object.values(snapshot.sites || {}).reduce((sum, s) => sum + s.scripts.length, 0)
+            accTxt.textContent = `Backed up ${scriptCount} scripts to drive`
         }
-        catch{}
+        catch(err){
+            console.error("Drive backup failed", err)
+            accTxt.textContent = `Backup failed. See console`
+        }
         finally{
             backUp.disabled = false
         }
@@ -662,10 +713,22 @@ async function disconnectDrive() {
         accTxt.textContent = "Looking for backup..."
         try{
             const token = await ensureDriveAccess()
+            const existing = await findDriveFile(token)
+            if(!existing){
+                accTxt.textContent = "No backup found in drive"
+                return;
+            }
+            const snapshot = await downloadBackup(token, existing.id)
+            await PTStorage.restoreAll(snapshot)
+            accTxt.textContent = "Restored from drive"
+            refreshStats()
         }
-        catch{}
+        catch(err){
+            console.error("Scripts restoring failed: ", err)
+            accTxt.textContent = "Failed, see console"
+        }
         finally{
             restoreBtn.disabled = false
         }
     })
-})
+})()

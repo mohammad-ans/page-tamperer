@@ -3,6 +3,7 @@
  "name": "Page Tamperer",
  "version": "1.0.0",
  "description": "Modify behaviour and styling of sites",
+ "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkQxpNCHRw8lmYRGOWfW3eM2DDCLvtedFR1FBiOjFFjBmU+3nw9Ai8MbbmKeJtQ9NIvqtXLZvuKYCHpGP9tN1BEX25qRbqe5wOoEX+dhkJ2I9trWceEYnt4WC+LgUowmh1g45LaDiwXxPomGCIf8U0jgLEpW/BfTkteqXqIudmxqxh2/gGcTWn4Rb1z1QGQM1tu7b2hZizLffbOVbtRj5+ZS8Prcxx79ixGvwPxk9fq0ASJztg8VEzRxME6g3TQoCNDziksD3Plta8Y91JTtPopaZr8sm1b3yUmG2bFPiHIHPjKoJxVvvaOKbSL/ixTH3eqmYmTBee2KVsVGIh5ZW0QIDAQAB",
  "action": {
     "default_popup": "main.html",
     "default_icon": {
@@ -20,8 +21,7 @@
  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting", "downloads"],
  "host_permissions": ["<all_urls>"],
  "optional_permissions": ["identity"],
- "optional_host_permissions": ["https://www.googleapis.com/*", "https://accounts.google.com/*"],
- "oauth2": {"client_id": ".apps.googleusercontent.com", 
+ "oauth2": {"client_id": "290841973523-pejmto5jg8efh50clita892m356qdiue.apps.googleusercontent.com", 
    "scopes": ["https://www.googleapis.com/auth/drive.appdata"]},
  "background": {
     "service_worker": "background.js"

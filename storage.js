@@ -130,6 +130,17 @@
                 f(changes);
         })
     }
+    async function restoreAll(snapshot) {
+        const curr = await Promise.all([getAllSites(), getSettings()])
+        await set({
+            sites: (snapshot && snapshot.sites) || curr[0],
+            settings: (snapshot && snapshot.settings) || curr[1]
+        })
+    }
+    async function exportSnapshot() {
+        const [sites, settings] = await Promise.all([getAllSites(), getSettings()])
+        return {sites, settings, exportedAt: Date.now()}
+    }
 
     global.PTStorage = {
         getSettings,
@@ -143,6 +154,8 @@
         getAllScripts,
         getRunning,
         clearAll,
-        onChange
+        onChange,
+        exportSnapshot,
+        restoreAll
     }
 })(typeof self !== "undefined" ? self : this)
