@@ -832,3 +832,8 @@ nav{
 .drive-backup .heading{
     font-weight: bold;
 }
+.drive-status{
+    font-size: 0.9rem;
+    font-family: monospace;
+    margin-top: 12px;
+}

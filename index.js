@@ -528,57 +528,104 @@ function goTo(close, open) {
 
 const PERMISSIONS = {permissions: ["identity"]}
 const DRIVE_FILENAME = "page-tamperer-backup.json"
+const CLIENT_ID = "290841973523-3c5fnd8i5p1l8ag3ctbecuvoitncpf0h.apps.googleusercontent.com"
+const DRIVE_SCOPES = []
 
-function getAuthToken(interactive) {
+function getDriveAuth() {
+    return new Promise((resolve) => chrome.storage.local.get("driveAuth", (res) =>  resolve(res.driveAuth || null)))
+}
+function setDriveAuth(auth){
+    return new Promise((resolve) => chrome.storage.local.set({driveAuth: auth}, resolve))
+}
+function clearDriveAuth(){
+    return new Promise((resolve) => chrome.storage.local.remove("driveAuth", resolve))
+}
+function launchAuthFlow(interactive){
+    const redirectUri = chrome.identity.getRedirectURL()  
+    const params = new URLSearchParams({
+        client_id: CLIENT_ID,
+        response_type: "token",
+        redirect_uri: redirectUri,
+        scope: "https://www.googleapis.com/auth/drive.appdata email",
+        prompt: "consent select_account"
+    })
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?${params.toString()}`
     return new Promise((resolve, reject) => {
-        chrome.identity.getAuthToken({interactive}, (token) => {
-            if (chrome.runtime.lastError || !token)
-                reject(chrome.runtime.lastError || new Error("No token returned"))
-            else
-                resolve(token)
+        chrome.identity.launchWebAuthFlow({url: authUrl, interactive}, (responseUrl) => {
+            if (chrome.runtime.lastError || !responseUrl){
+                reject(new Error(chrome.runtime.lastError) || "Google sign in was cancelled or failed")
+                return;
+            }
+            try{
+                const fragment = new URL(responseUrl).hash.slice(1)
+                const fragmentParams = new URLSearchParams(fragment)
+                const accessToken = fragmentParams.get("access_token")
+                if(!accessToken){
+                    reject(new Error("Google's response did not include an access token"))
+                    return
+                }
+                const expiresIn = parseInt(fragmentParams.get("expires_in") || "3600", 10)
+                resolve({token: accessToken, expiresAt: Date.now() + expiresIn * 1000})
+            }
+            catch(err){
+                reject(new Error("Could not parse google sign in response"))
+            }
+        
         })
     })
 }
-
-async function checkDriveConnection() {
-    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, (result) => resolve(result)))
-    if(!granted)
-        return null
+async function fetchDriveUserEmail(token) {
     try{
-        await getAuthToken(false)
-        const profile = await new Promise((resolve) => chrome.identity.getProfileUserInfo(resolve))
-        return {email: profile.email || "Your account"}
+        const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {headers: {Authorization: `Bearer ${token}`}})
+        if (!res.ok)
+            return "Your Account"
+        const data = await res.json()
+        return data.email
     }
     catch{
-        return null
+        return "Your account"
     }
+}
+async function checkDriveConnection() {
+    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
+    if(!granted)
+        return null
+    const stored = await getDriveAuth()
+    if (stored && stored.expiresAt > Date.now()){
+        return {email: stored.email || "Your account"}
+    }
+    return null
+}
+async function ensureDrivePermission() {
+    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
+    if (granted)
+        return
+    const nowGranted = await new Promise((resolve) => chrome.permissions.request(PERMISSIONS, resolve))
+    if(!nowGranted)
+        throw new Error("Drive permission was not granted")
 }
 
 async function ensureDriveAccess(){
-    const alreadyGranted = await new Promise((resolve) => {
-        chrome.permissions.contains(PERMISSIONS, (result) => resolve(result))
-    })
-    if(!alreadyGranted) {
-        const granted = await new Promise((resolve) => {
-            chrome.permissions.request(PERMISSIONS, (result) => resolve(result))
-        })
-        if(!granted)
-            throw new Error("Drive permissions were not granted")
-    }
-    return getAuthToken(true)
+    await ensureDrivePermission()
+    const stored = await getDriveAuth()
+    if(stored && stored.expiresAt > Date.now() + 60000)
+        return stored.token
+    const {token, expiresAt} = await launchAuthFlow(true)
+    const email = await fetchDriveUserEmail(token)
+    await setDriveAuth({token, expiresAt, email})
+    return token
 }
 
 async function disconnectDrive() {
-    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS))
-    if(granted) {
+    const stored = await getDriveAuth()
+    if(stored && stored.token){
         try{
-            const token = await getAuthToken(false)
-            await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`)
-            chrome.identity.removeCachedToken({token}, () => {})
+            await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${stored.token}`)
         }
         catch{
 
         }
+        await clearDriveAuth()
         await new Promise((resolve) => chrome.permissions.remove(PERMISSIONS, resolve))
     }
 }
@@ -594,15 +641,18 @@ async function uploadDriveFile(token, existingId, jsonString) {
         return res.json()
     }
     const boundary = "pt_boundary_" + Date.now()
-    const metadata = {name: DRIVE_FILENAME, parents: ["appDataFolder"]}
-    const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\nContent-Type: application/json\r\n\r\n${jsonString}\r\n--${boundary}--` 
-    const res = await fetch("https://www.googleapis.com/drive/v3/files?uploadType=multipart", {
+    const metadata = {name: DRIVE_FILENAME, parents: ["appDataFolder"], mimeType: "application/json"}
+    const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonString}\r\n--${boundary}--\r\n`
+    console.log(body)
+    const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
         method: "POST",
         headers: {Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}`},
         body
     })
-    if (!res.ok)
-        throw new Error(`Drive create failed: ${res.status}`)
+    if (!res.ok){
+        const msg = await res.text()
+        throw new Error(`Drive create failed: ${res.status} ${msg}`)
+    }
     return res.json()
 }
 
@@ -616,12 +666,12 @@ async function downloadBackup(token, fileId) {
 }
 
 async function findDriveFile(token) {
-    const query = encodeURIComponent(`name=${DRIVE_FILENAME}`)
+    const query = encodeURIComponent(`name='${DRIVE_FILENAME}' and trashed = false`)
     const res = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${query}&fields=files(id,name)`,
         {headers: {Authorization: `Bearer ${token}`}}
     )
     if (!res.ok)
-        throw new Error(`Drive list failed: ${token}`)
+        throw new Error(`Drive list failed: ${res.status}`)
     const data = await res.json()
     return (data.files && data.files[0]) || null
 }
@@ -632,6 +682,7 @@ async function findDriveFile(token) {
     const disconnectBtn = exportScripts.querySelector("#drive-disconnect-btn")
     const backUp = exportScripts.querySelector("#drive-backup-btn")
     const restoreBtn = exportScripts.querySelector("#drive-restore-btn")
+    const driveStatus = exportScripts.querySelector(".drive-status")
 
     function driveConnected(email) {
         accTxt.textContent = `Connected as ${email}`
@@ -658,15 +709,19 @@ async function findDriveFile(token) {
 
     connectBtn.addEventListener("click", async () => {
         connectBtn.disabled = true
-        accTxt.textContent = "Waiting for Google sign-in..."
+        driveStatus.style.color = "rgb(167, 167, 167)"
+        driveStatus.innerHTML = "Waiting for google sign in"
         try{
             await ensureDriveAccess()
-            const profile = await new Promise((resolve) => chrome.identity.getProfileUserInfo(resolve))
-            driveConnected(profile.email || "Your account")
+            const state = await checkDriveConnection()
+            driveConnected(state ? state.email : "Your account")
+            driveStatus.style.color = "#39FF14"
+            driveStatus.innerHTML = "Connected"
         }
         catch(err){
-            console.error("Drive connecting failed", err)   
-            accTxt.textContent = "Could not connect. See console"
+            console.error("Drive connecting failed", err)
+            driveStatus.style.color = "rgb(255, 20, 20)"
+            driveStatus.innerHTML = `Could not connect, see console for details`
         }
         finally{
             connectBtn.disabled = false
@@ -675,15 +730,18 @@ async function findDriveFile(token) {
 
     disconnectBtn.addEventListener("click", async () => {
         disconnectBtn.disabled = true
-        accTxt.textContent = "Disconnecting..."
+        driveStatus.style.color = "rgb(167, 167, 167)"
+        driveStatus.innerHTML = "Disconnecting"
         try{
             await disconnectDrive()
             driveDisconnected()
-            accTxt.textContent = "Disconnected"
+            driveStatus.style.color = "#39FF14"
+            driveStatus.innerHTML = "Account disconnected"
         }
         catch(err){
             console.error("Drive disconnect failed", err)
-            accTxt.textContent = "Could not disconnect. See console"
+            driveStatus.style.color = "rgb(255, 20, 20)"
+            driveStatus.textContent = "Could not disconnect, see console for details"
         }
         finally{
             disconnectBtn.disabled = false
@@ -691,18 +749,21 @@ async function findDriveFile(token) {
     })
     backUp.addEventListener("click", async () => {
         backUp.disabled = true
-        accTxt.textContent = "Backing up..."
+        driveStatus.style.color = "rgb(167, 167, 167)"
+        driveStatus.innerHTML = "Backing up files"
         try{
             const token = await ensureDriveAccess()
             const snapshot = await PTStorage.exportSnapshot()
             const existing = await findDriveFile(token)
             await uploadDriveFile(token, existing ? existing.id : null, JSON.stringify(snapshot))
             const scriptCount = Object.values(snapshot.sites || {}).reduce((sum, s) => sum + s.scripts.length, 0)
-            accTxt.textContent = `Backed up ${scriptCount} scripts to drive`
+            driveStatus.style.color = "#39FF14"
+            driveStatus.innerHTML = `Backed up ${scriptCount} to drive`
         }
         catch(err){
             console.error("Drive backup failed", err)
-            accTxt.textContent = `Backup failed. See console`
+            driveStatus.style.color = "rgb(255, 20, 20)"
+            driveStatus.innerHTML = "Backup failed, see console for details"
         }
         finally{
             backUp.disabled = false
@@ -710,22 +771,26 @@ async function findDriveFile(token) {
     })
     restoreBtn.addEventListener("click", async () => {
         restoreBtn.disabled = true
-        accTxt.textContent = "Looking for backup..."
+        driveStatus.style.color = "rgb(167, 167, 167)"
+        driveStatus.innerHTML = "Looking for a backup"
         try{
             const token = await ensureDriveAccess()
             const existing = await findDriveFile(token)
             if(!existing){
-                accTxt.textContent = "No backup found in drive"
+                driveStatus.style.color = "rgb(255, 20, 20)"
+                driveStatus.innerHTML = "No backup found in drive yet."
                 return;
             }
             const snapshot = await downloadBackup(token, existing.id)
             await PTStorage.restoreAll(snapshot)
-            accTxt.textContent = "Restored from drive"
+            driveStatus.style.color = "#39FF14"
+            driveStatus.innerHTML = "Restored from drive"
             refreshStats()
         }
         catch(err){
             console.error("Scripts restoring failed: ", err)
-            accTxt.textContent = "Failed, see console"
+            driveStatus.style.color = "rgb(255, 20, 20)"
+            driveStatus.innerHTML = "Restore failed, see console for details"
         }
         finally{
             restoreBtn.disabled = false
