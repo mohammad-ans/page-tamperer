@@ -40,10 +40,26 @@
         else
             document.readyState === "complete" ? fn() : window.addEventListener("load", fn, {once: true})
     }
+    function resolveElement(edit) {
+        const candidates = (edit.selectors && edit.selectors.length) ? edit.selectors : [edit.selector]
+        for (const selector of candidates){
+            if (!selector)
+                continue
+            try{
+                const el = document.querySelector(selector)
+                if(el)
+                    return el
+            }
+            catch{
+
+            }
+        }
+        return null
+    }
     function applyDomEdit(script) {
         const edits = JSON.parse(script.code || "[]")
         for (const edit of edits) {
-            const el = document.querySelector(edit.selector)
+            const el = resolveElement(edit)
             if(!el) {
                 console.log(`${script.name}: selector not found: ${edit.selector}`)
                 continue

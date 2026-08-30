@@ -47,7 +47,7 @@
             theme = THEMES[settings.theme] || THEMES["dark-theme"]
         injectBaseStyles();
     }
-    function cssPath(el) {
+    function structuralPath(el) {
         if (!(el instanceof Element))
             return null
         if (el.id)
@@ -73,7 +73,41 @@
         }
         return "body > " + parts.join(" > ")
     }
-
+    function generated(name) {
+        return /^(css|sc|jss|emotion)-[a-z0-9]{4,}$/i.test(name) || /^[a-z]{1,3}-?[0-9a-f]{5,}$/i.test(name) || /^_[a-zA-Z0-9]{5,}_?$/.test(name)
+    }
+    function uniqueSel(selector) {
+        try{
+            return document.querySelectorAll(selector).length === 1
+        }
+        catch{
+            return false
+        }
+    }
+    function classSelector(el) {
+        const classes = Array.from(el.classList).filter((c) => !generated(c))
+        for(const cls of classes) {
+            const selector = `.${CSS.escape(cls)}`
+            if(uniqueSel(selector))
+                return selector
+        }
+        if (classes.length >= 2) {
+            const selector = "." + classes.slice(0, 2).map((c) => CSS.escape(c)).join(".")
+            if(uniqueSel(selector))
+                return selector
+        }
+        return null
+    }
+    function generateSelectors(el) {
+        const candidates = []
+        if (el.id)
+            candidates.push(`#${CSS.escape(el.id)}`)
+        candidates.push(structuralPath(el))
+        const clsSelector = classSelector(el)
+        if(clsSelector)
+            candidates.push(clsSelector)
+        return [...new Set(candidates)]
+    }
     function injectBaseStyles() {
         if(document.getElementById(STYLE_ID))
             return
@@ -308,7 +342,7 @@
     }
     function applyStyle(el, property, value, important) {
         el.style.setProperty(property, value, important ? "important" : "")
-        queueEdit({type: "style", selector: cssPath(el), property: property, value: value, important: !!important})
+        queueEdit(el, {type: "style", property: property, value: value, important: !!important})
     }
     function pxNumber(computedVal, fallback) {
         const n = parseFloat(computedVal)
@@ -407,8 +441,8 @@
             textInput.addEventListener("input", (e)=> {
                 e.stopPropagation()
                 el.textContent = textInput.value;
-                queueEdit({
-                    type: "text", selector: cssPath(el), value: textInput.value
+                queueEdit(el, {
+                    type: "text", value: textInput.value
                 })
             })
         }
@@ -418,7 +452,7 @@
             colorInput.value = rgbToHex(getComputedStyle(el).color)
             colorInput.addEventListener("input", (e) => {
                 el.style.color = e.target.value
-                queueEdit({type: "style", selector: cssPath(el), property: "color", value: e.target.value})
+                queueEdit(el, {type: "style", property: "color", value: e.target.value})
             })
         }
 
@@ -427,22 +461,21 @@
             bgInput.value = rgbToHex(getComputedStyle(el).backgroundColor)
             bgInput.addEventListener("input", (e) => {
                 el.style.backgroundColor = e.target.value
-                queueEdit({type: "style", selector: cssPath(el), property: "background-color", value: e.target.value})
+                queueEdit(el, {type: "style", property: "background-color", value: e.target.value})
             })
         }
 
         if(hide)
             panel.querySelector(".pt-hide").addEventListener("click", ()=>{ 
                 el.style.display = "none";
-                queueEdit({type: "style", selector: cssPath(el), property: "display", value: "none"})
+                queueEdit(el, {type: "style", property: "display", value: "none"})
                 closePanel()
                 deselect()
             });
         if(del)
             panel.querySelector(".pt-delete").addEventListener("click", ()=> {
-                const selectorVal = cssPath(el)
                 el.remove();
-                queueEdit({type: "remove", selector: selectorVal})
+                queueEdit(el, {type: "remove"})
                 closePanel();
                 currentTarget = null;
             })
@@ -512,7 +545,7 @@
                 if(!name) 
                     return
                 el.setAttribute(name, valInp.value)
-                queueEdit({type: "attribute", selector: cssPath(el), property: name, value: valInp.value})
+                queueEdit(el, {type: "attribute", property: name, value: valInp.value})
             })
 
         }
@@ -533,7 +566,9 @@
         panelPos(panel, el)
     }
 
-    function queueEdit(edit) {
+    function queueEdit(el, styleEdit) {
+        const selectors = generateSelectors(el)
+        const edit = {selector: selectors[0], selectors, ...styleEdit}
         const i = pending.findIndex((e) =>
             e.selector === edit.selector && e.type === edit.type && e.property === edit.property
         )
