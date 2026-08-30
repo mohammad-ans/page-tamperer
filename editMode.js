@@ -34,6 +34,11 @@
     }
     let theme = THEMES["dark-theme"]
 
+    function propagationStop(el) {
+        ["click", "input", "keydown", "change", "keyup", "keypress", "focusin", "focusout", "mousedown", "pointerdown", "mouseup", "pointerup"].forEach((type) => {
+            el.addEventListener(type, (e) => e.stopPropagation())
+        })
+    }
     function removeTheme() {
         if(styleEl)
             document.documentElement.removeChild(styleEl)
@@ -242,8 +247,11 @@
             border-radius: 6px;
             width: 100%;
             box-sizing: border-box;
-            resize: none;
-            height: 24px;
+            resize: vertical;
+            min-height: 90px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
         }
         #${PANEL_ID} input[type=color] {
             width: 100%;
@@ -294,6 +302,7 @@
         `;
         toolbar.querySelector(".pt-save").addEventListener("click", saveEdits);
         toolbar.querySelector(".pt-exit").addEventListener("click", () => exitEditMode(false))
+        propagationStop(toolbar)
         document.documentElement.appendChild(toolbar)
         return toolbar;
     }
@@ -392,6 +401,7 @@
     function openPanel(el) {
         closePanel();
         const panel = document.createElement("div")
+        propagationStop(panel)
         panel.id = PANEL_ID
         panel.style.visibility = "hidden"
         document.documentElement.appendChild(panel)
@@ -430,7 +440,7 @@
             return
         }
         panel.innerHTML = `
-            ${txt ? `<textarea class="pt-text-input" ></textarea>` : ""}
+            ${txt ? `<textarea class="pt-text-input" rows="3"></textarea>` : ""}
             ${txtClr ? `<label>Text color <input type="color" class="pt-color-input" /></label>`: ""}
             ${bgClr ? `<label>Background <input type="color" class="pt-bg-input" /></label>`: ""}
             ${border ? `<label>Border <input type="number" class="pt-border-width" min="0" style="width:50px"/> px<input type="color" class="pt-border-color"/></label>`: ""}
@@ -454,11 +464,12 @@
             const textInput = panel.querySelector(".pt-text-input")
             textInput.value = el.textContent.trim();
             textInput.addEventListener("input", (e)=> {
-                e.stopPropagation()
                 el.textContent = textInput.value;
                 queueEdit(el, {
                     type: "text", value: textInput.value
                 })
+                textInput.style.height = "auto"
+                textInput.style.height = `${Math.min(textInput.scrollHeight, 200)}px`
             })
         }
 
