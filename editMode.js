@@ -47,18 +47,30 @@
             theme = THEMES[settings.theme] || THEMES["dark-theme"]
         injectBaseStyles();
     }
+
+    function attrSelector(el) {
+        const dataAttrs = Array.from(el.attributes).filter((a) => a.name.startsWith("data-") && a.value.trim())
+        for (const attr of dataAttrs) {
+            const selector = `[${attr.name}="${CSS.escape(attr.value)}"]`
+            if (uniqueSel(selector))
+                return selector
+        }
+        for(const attr of ["name", "aria-label"]) {
+            const val = el.getAttribute(attr)
+            if(val) {
+                const selector = `[${attr}="${CSS.escape(val)}"]`
+                if (uniqueSel(selector))
+                    return selector
+            }
+        }
+        return null
+    }
     function structuralPath(el) {
         if (!(el instanceof Element))
             return null
-        if (el.id)
-            return `#${CSS.escape(el.id)}`
         const parts = []
         let node = el;
         while(node && node.nodeType == Node.ELEMENT_NODE && node != document.body) {
-            if(node.id) {
-                parts.unshift(`#${CSS.escape(node.id)}`);
-                break;
-            }
             let selector = node.tagName.toLowerCase();
             let sibling = node.previousElementSibling;
             let n = 1;
@@ -106,6 +118,9 @@
         const clsSelector = classSelector(el)
         if(clsSelector)
             candidates.push(clsSelector)
+        const attrSel = attrSelector(el)
+        if(attrSel)
+            candidates.push(attrSel)
         return [...new Set(candidates)]
     }
     function injectBaseStyles() {
