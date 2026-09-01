@@ -24,7 +24,12 @@ Note that using drive backup will take local storage's current scripts and push 
  - Using a same script on multiple sites with regular expressions matching.
  - Downloading single or selective scripts
 ## How to use
-- Download the code folder from the repository by cloning or simple download. You can also download the zip from the release.
+- Download the code folder from the repository by cloning like this
+```bash
+git clone https://github.com/mohammad-ans/page-tamperer.git 
+```
+ or simple download. You can also download the zip from the release. Unzip it if you downloaded a zip.
+
 - Open chrome browser and go to ```chrome://extensions```. 
 - Turn on developer options in chrome extensions. Enable the desired options in the settings.
 - Click live edit on a real website, click any element and an edit panel will appear with the selected options.
@@ -40,3 +45,9 @@ Note that using drive backup will take local storage's current scripts and push 
 Well first of all I learnt about extensions, how to debug them as I had to change dom elements themselves first to know about the logs, then I found about the extensions inspect window that made things easier. And then there are how browsers work like chromium based browsers and the others, how permissions works for extensions and what and I cannot do in extensions. I also learnt about the manifest files like how to structure though my formatting of data is real bad due to the pythonic ways. As for the tech I know already about html, css and javascript but I never kinda worked with local storage except some minor token storage or dataset, so some learnings about it as I had to find about storage ways and chrome's local storage for it, 
 ### AI Usage
 AI was used to get generate a color palette and svgs in the website that are 7 in total ig, and give some design inspirations. I did not choose any of those designs but built my own that was by taking inspiration from it but with mainly my design focus. Other than that there might be some questions on how things work that was asked from AI, nothing else. And yepp its mostly black and white site kinda so ig I did not even use much of its color palette.
+## Images
+![Settings Dark](./settings.png)
+![Settings Light](./lightthemesettings.png)
+![Main Dark](./main.png)
+![Main Light](./lightthememain.png)
+![Export Scripts](./exportscripts.png)
