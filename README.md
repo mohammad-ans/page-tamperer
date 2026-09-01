@@ -31,10 +31,13 @@ git clone https://github.com/mohammad-ans/page-tamperer.git
  or simple download. You can also download the zip from the release. Unzip it if you downloaded a zip.
 
 - Open chrome browser and go to ```chrome://extensions```. 
-- Turn on developer options in chrome extensions. Enable the desired options in the settings.
+- Turn on developer options in chrome extensions. 
+- Click Load unpacked option and select the main folder(if zip selected the unzipped folder).
+- Now you can see and open the extension from the extensions icon on home page.(reload any website if it was open before extension was loaded)
+- Enable the desired live edit options in the settings.
 - Click live edit on a real website, click any element and an edit panel will appear with the selected options.
 - Make any edits and save script. Also see instructions below
-- For other options like add script by uploading, export scripts, see scripts all the options are listed on the home page.
+- For other options like add script by uploading, export scripts, see scripts all the options are listed on the home page
 ### Instructions to use
 - When the extension is first loaded or updated after making changes, then page must be refereshed before doing live edit.
 - Max 5 options can be selected for the live edit at a time.
