@@ -10,8 +10,8 @@ This extension is created using html, css and javascript. For storage we are usi
  - It has a live edit option that works for sites and elements that do not have changing and dynamic classes.
  - It has two themes, light and dark.
  - You can also download your scripts as zip files or simple files including the ones created during live edit. Those are json objects of the things changed.
- - You can also back up your scripts to your drive, as it is not uploaded yet so you can only use test emails for upload.
-### Test email for Drive
+ - You can also back up your scripts to your drive, as it is not uploaded yet so you can only use test emails for upload.(**Deprecated feature**)
+### Test email for Drive(**Deprecated feature**)
 Email: pagetamperer@gmail.com
 Password: page@tamperer123
 Note that using drive backup will take local storage's current scripts and push to drive replacing any other. And restore takes anything from drive and pushes to local storage's current scripts. So your current scripts might be deleted in doing so, or the backup if you clicked the wrong button. Configuring what to upload and what to restore is **not implemented**.
