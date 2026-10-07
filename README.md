@@ -10,8 +10,8 @@ This extension is created using html, css and javascript. For storage we are usi
  - It has a live edit option that works for sites and elements that do not have changing and dynamic classes.
  - It has two themes, light and dark.
  - You can also download your scripts as zip files or simple files including the ones created during live edit. Those are json objects of the things changed.
- - You can also back up your scripts to your drive, as it is not uploaded yet so you can only use test emails for upload.
-### Test email for Drive
+ - You can also back up your scripts to your drive, as it is not uploaded yet so you can only use test emails for upload.(**Deprecated feature**)
+### Test email for Drive(**Deprecated feature**)
 Email: pagetamperer@gmail.com
 Password: page@tamperer123
 Note that using drive backup will take local storage's current scripts and push to drive replacing any other. And restore takes anything from drive and pushes to local storage's current scripts. So your current scripts might be deleted in doing so, or the backup if you clicked the wrong button. Configuring what to upload and what to restore is **not implemented**.
@@ -47,7 +47,7 @@ git clone https://github.com/mohammad-ans/page-tamperer.git
 ## Journey and what I learned
 Well first of all I learnt about extensions, how to debug them as I had to change dom elements themselves first to know about the logs, then I found about the extensions inspect window that made things easier. And then there are how browsers work like chromium based browsers and the others, how permissions works for extensions and what and I cannot do in extensions. I also learnt about the manifest files like how to structure though my formatting of data is real bad due to the pythonic ways. As for the tech I know already about html, css and javascript but I never kinda worked with local storage except some minor token storage or dataset, so some learnings about it as I had to find about storage ways and chrome's local storage for it, 
 ### AI Usage
-AI was used to get generate a color palette and svgs in the website that are 7 in total ig, and give some design inspirations. I did not choose any of those designs but built my own that was by taking inspiration from it but with mainly my design focus. Other than that there might be some questions on how things work that was asked from AI, nothing else. And yepp its mostly black and white site kinda so ig I did not even use much of its color palette.
+AI was used to get generate a color palette and svgs in the website that are 7 in total ig, and give some design inspirations. I did not choose any of those designs but built my own that was by taking inspiration from it but with mainly my design focus. Other than that there might be some questions on how things work that was asked from AI, nothing else. And yepp its mostly black and white site kinda so ig I did not even use much of its color palette. It was used in learning about google drive setup, with those long urls debugging only ig.
 ## Video
 
 https://github.com/user-attachments/assets/c9ba9010-db8e-4aa3-a22f-4bf785ef1ce0
