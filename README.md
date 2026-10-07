@@ -23,17 +23,29 @@ Note that using drive backup will take local storage's current scripts and push 
 ## Features not implemented:
  - Using a same script on multiple sites with regular expressions matching.
  - Downloading single or selective scripts
+## Extension in review by firefox
+Extension is under review by mozilla add ons for firefox store while it is uploaded on edge store.
+![Firefox Extension Review](./firefox-review.png)
 ## How to use
-- Download the code folder from the repository by cloning like this
-```bash
-git clone https://github.com/mohammad-ans/page-tamperer.git 
-```
- or simple download. You can also download the zip from the release. Unzip it if you downloaded a zip.
+### Firefox Installation
+- Download the page-tamperer-firefox zip from the release named Firefox .
+- Open firefox and go to: <br>`about:debugging#/runtime/this-firefox\n`<br>.
+- Select load temporary add on option. It will ask to upload something. Select the downloaded zip folder.
+- Now you can open any website and start using extension(note that for already opened webpages you need to reload them first to use on them)
+- **Note that for javascript scripts firefox will ask for a permission when you try to create one, give it and you are fine to use them too.** The popup of permission is hidden behind extension so click on screen for extension to disappear and approve then.
 
-- Open chrome browser and go to ```chrome://extensions```. 
-- Turn on developer options in chrome extensions. 
-- Click Load unpacked option and select the main folder(if zip selected the unzipped folder).
-- Now you can see and open the extension from the extensions icon on home page.(reload any website if it was open before extension was loaded)
+### Chrome Installation
+- Download the zip folder(page-tamperer-chrome.zip) and unzip it.
+- Go to <br>`chrome://extensions/`<br>.
+- Enable developer options and select load unpacked.
+- It will open folder selector, select the unzip folder from there.
+- Now you can use it on any new opened sites and for already opened ones reload to use it.
+
+### Microsoft Edge
+Download it from microsoft edge:<br>
+`https://microsoftedge.microsoft.com/addons/detail/page-tamperer/bbjbcjmljnpladgjiddjhdagneoheobo`
+
+### Using extension after installation
 - Enable the desired live edit options in the settings.
 - Click live edit on a real website, click any element and an edit panel will appear with the selected options.
 - Make any edits and save script. Also see instructions below
