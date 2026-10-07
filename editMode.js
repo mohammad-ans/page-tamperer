@@ -182,7 +182,7 @@
         #${TOOLBAR_ID} input {
             all: unset;
             background: ${theme.inputBg};
-            color: ${theme.text}
+            color: ${theme.text};
             padding: 6px 8px;
             border-radius: 6px;
             width: 140px;
@@ -429,8 +429,8 @@
 
         if (!anyOn) {
             panel.innerHTML = `
-                <div class="pt-empty--panel">No live-edit options are enabled. Turn some on in the Settings.</div>
-                <button class="pt-close">Close</>
+                <div class="pt-empty-panel">No live-edit options are enabled. Turn some on in the Settings.</div>
+                <button class="pt-close">Close</button>
             `
             panel.querySelector(".pt-close").addEventListener("click", ()=> {
                 closePanel()
@@ -445,15 +445,15 @@
             ${bgClr ? `<label>Background <input type="color" class="pt-bg-input" /></label>`: ""}
             ${border ? `<label>Border <input type="number" class="pt-border-width" min="0" style="width:50px"/> px<input type="color" class="pt-border-color"/></label>`: ""}
             ${borderRadius ? `<label>Corner radius <input type="number" class="pt-radius-input" min="0" style="width:60px"/> px</label>`: ""}
-            ${opacity ? `<label>Opacity <input type="range" class="pt-opacity-input" min="0" max="1" step="0.05""/></label>`: ""}
+            ${opacity ? `<label>Opacity <input type="range" class="pt-opacity-input" min="0" max="1" step="0.05"/></label>`: ""}
             ${fontSw ? `<label>Font size <input type="number" class="pt-fontsize-input" min="1" style="width:60px"/> px</label>`: ""}
-            ${fontSw ? `<label>Font weight <select class="pt-fontweight-input"><option value="400">Normal</options><option value="500">Medium</option><option value="700">Semi bold</option><option value="800">Bold</option><option value="900">Bolder</option></select></label>`: ""}
+            ${fontSw ? `<label>Font weight <select class="pt-fontweight-input"><option value="400">Normal</option><option value="500">Medium</option><option value="700">Semi bold</option><option value="800">Bold</option><option value="900">Bolder</option></select></label>`: ""}
             ${padding ? `<label>Padding <input type="number" class="pt-padding-input" min="0" style="width:60px"/> px</label>` : ""}
             ${margin ? `<label>Margin <input type="number" class="pt-margin-input" min="0" style="width:60px"/> px</label>` : ""}
             ${size ? `<label>Width <input type="number" class="pt-width-input" min="0" style="width:70px" /> px</label>` : ""}
-            ${size ? `<label>Height <input type="number" class="pt=height-input" min="0" style="width:70px"/> px</label>` : ""}
+            ${size ? `<label>Height <input type="number" class="pt-height-input" min="0" style="width:70px"/> px</label>` : ""}
             ${zIdx ? `<label>Z-Index <input type="number" class="pt-zindex-input" style="width:70px"/></label>` : ""}
-            ${attribute ? `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply>Set</button></div>` : ""}
+            ${attribute ? `<div class="pt-attr"><input type="text" class="pt-attr-name" placeholder="attribute" /><input type="text" class="pt-attr-value" placeholder="value"/><button class="pt-attr-apply">Set</button></div>` : ""}
             ${forceShow ? `<button class="pt-force-show">Force show</button>`: ""}
             ${hide ? `<button class="pt-hide">Hide Element</button>` : ""}
             ${del ? `<button class="pt-delete">Delete Element</button>` : ""}
@@ -548,7 +548,7 @@
         if(size) {
             const widthInp = panel.querySelector(".pt-width-input")
             widthInp.value = Math.round(el.getBoundingClientRect().width)
-            widthInp.addEventListener("input", ()=> applyStyle(el, "width", `${widthInp.val || 0}px`))
+            widthInp.addEventListener("input", ()=> applyStyle(el, "width", `${widthInp.value || 0}px`))
             const heightInp = document.querySelector(".pt-height-input")
             heightInp.value = Math.round(el.getBoundingClientRect().height)
             heightInp.addEventListener("input", ()=> applyStyle(el, "height", `${heightInp.value || 0}px`))
@@ -557,7 +557,7 @@
             const zIdxInp = panel.querySelector(".pt-zindex-input")
             const zVal = getComputedStyle(el).zIndex
             zIdxInp.value = zVal === "auto" ? 0 : zVal
-            zIdxInp.addEventListener("input", ()=> applyStyle(el, `"z-index", ${zIdxInp.value || 0}px`))
+            zIdxInp.addEventListener("input", ()=> applyStyle(el, "z-index", `${zIdxInp.value || 0}`))
         }
         if(attribute) {
             const nameInp = panel.querySelector(".pt-attr-name")
@@ -579,7 +579,7 @@
             panel.querySelector(".pt-force-show").addEventListener("click", ()=> {
                 applyStyle(el, "display", "revert", true)
                 applyStyle(el, "visibility", "visible", true)
-                applyStyle(el, opacity, "1", true)
+                applyStyle(el, "opacity", "1", true)
                 closePanel()
                 deselect()
             })
@@ -622,7 +622,7 @@
     }
 
     function rgbToHex(rgb) {
-        const nums = rgb.match(/d[\d.]+/g)
+        const nums = rgb.match(/[\d.]+/g)
         if(!nums)
             return '#ffffff'
         const [r,g,b,a] = nums.map(Number)

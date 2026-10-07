@@ -191,15 +191,39 @@ function resolveHost(url) {
     const trimmed = url.trim()
     if(!trimmed)
         return "";
-    if(!trimmed.includes("://"))
-        return trimmed
     try{
-        return new URL(trimmed).hostname
+        const normalized = trimmed.includes("://") ? trimmed : `https://${trimmed}`
+        const host = new URL(normalized).hostname
+        if(!host)
+            return ""
+        if(host.startsWith("[") && host.endsWith("]"))
+            return host
+        if(!/^[a-z0-9.-]+$/i.test(host))
+            return ""
+        const labels = host.split(".")
+        if(labels.some((label) => !label || label.length > 63 || label.startsWith("-") || label.endsWith("-")))
+            return ""
+        return host
     }
     catch{
-        return trimmed
+        return ""
     }
 }
+
+async function ensureUserScriptsPermission() {
+    const permission = {permissions: ["userScripts"]};
+    return await new Promise((resolve) => {
+        chrome.permissions.request(permission, (granted) => {
+            if (chrome.runtime.lastError) {
+                console.error("Could not request userScripts permission", chrome.runtime.lastError);
+                resolve(false);
+                return;
+            }
+            resolve(Boolean(granted));
+        });
+    });
+}
+
 
 (async function initAddScript() {
     const siteInput = addScriptPg.querySelector("#script-site")
@@ -269,6 +293,13 @@ function resolveHost(url) {
         saveBtn.disabled = true;
         saveBtn.textContent = "Saving..."
         try{
+            if (currentType === "js") {
+                const granted = await ensureUserScriptsPermission();
+                if (!granted) {
+                    status.textContent = "JavaScript scripts need the Firefox userScripts permission.";
+                    return;
+                }
+            }
             await PTStorage.add(host, {
                 name: nameInput.value.trim() || "untitled_script",
                 type: currentType,
@@ -368,9 +399,9 @@ async function showRunningScripts() {
     const listEl = document.querySelector("#running-scripts-list")
     const noticeEl = document.querySelector(".scripts-list-notice")
     const settings = await PTStorage.getSettings();
-    if(!settings.allowScripts) {
+    if(!(settings.automaticManipulation && settings.allowScripts)) {
         noticeEl.hidden = false
-        noticeEl.textContent = "Scripts are turned off globally in settings - nothing is currently running"
+        noticeEl.textContent = "Automatic playback is turned off in settings - nothing is currently running"
     }
     else{
         noticeEl.hidden = true
@@ -394,10 +425,16 @@ function validateName(name) {
 function extension(type) {
     return {js: "js", css: "css", "dom-edit": "json"}[type] || "txt";
 }
+function safePathSegment(value) {
+    return (value || "site")
+        .replace(/[^a-z0-9._-]+/gi, "_")
+        .replace(/^\.+/, "")
+        .slice(0, 120) || "site"
+}
 function scriptToFile(script) {
     const filename = `${validateName(script.name)}.${extension(script.type)}`
     const data = script.type === "dom-edit" ? JSON.stringify(JSON.parse(script.code || "[]"), null, 2) : script.code || ""
-    return {host: script.host, filename, data}
+    return {host: safePathSegment(script.host), filename, data}
 }
 function uniqueNames(usedNames, basePath) {
     if(!usedNames.has(basePath)) {
@@ -441,7 +478,7 @@ function uniqueNames(usedNames, basePath) {
                 setTimeout(() => URL.revokeObjectURL(url), 10000)
             }
         }
-        status.textContent = `Successfully exported: ${scripts.length}. Failed: ${failed}.`
+        status.textContent = `Successfully exported: ${scripts.length - failed}. Failed: ${failed}.`
     })
     zipBtn.addEventListener("click", async () => {
         const scripts = await PTStorage.getAllScripts()
@@ -477,7 +514,9 @@ async function showDashboard(){
     const [sites, appSettings] = await Promise.all([PTStorage.getAllSites(), PTStorage.getSettings()])
     const hosts = Object.keys(sites).sort()
     const totalScripts = hosts.reduce((sum, h) => sum + sites[h].scripts.length, 0)
-    const totalRunning = appSettings.allowScripts ? hosts.reduce((sum, h) => sum + sites[h].scripts.filter((s) => s.enabled).length, 0) : 0;
+    const totalRunning = (appSettings.automaticManipulation && appSettings.allowScripts)
+        ? hosts.reduce((sum, h) => sum + sites[h].scripts.filter((s) => s.enabled).length, 0)
+        : 0;
 
     document.querySelector(".dashboard-stat-scripts .number").textContent = totalScripts
     document.querySelector(".dashboard-stat-sites .number").textContent = hosts.length
@@ -488,7 +527,7 @@ async function showDashboard(){
     if(hosts.length === 0) {
         const empty = document.createElement("div")
         empty.className = "scripts-list-empty";
-        empty.texContent = "No sites with saved scripts yet."
+        empty.textContent = "No sites with saved scripts yet."
         listEl.appendChild(empty)
         return;
     }
@@ -522,278 +561,5 @@ function goTo(close, open) {
     document.querySelector(".dashboard-all-scripts").addEventListener("click", ()=> {
         goTo(dashboardPg, allScriptsPg)
         showAllScripts()
-    })
-})()
-
-
-const PERMISSIONS = {permissions: ["identity"]}
-const DRIVE_FILENAME = "page-tamperer-backup.json"
-const CLIENT_ID = "290841973523-3c5fnd8i5p1l8ag3ctbecuvoitncpf0h.apps.googleusercontent.com"
-const DRIVE_SCOPES = []
-
-function getDriveAuth() {
-    return new Promise((resolve) => chrome.storage.local.get("driveAuth", (res) =>  resolve(res.driveAuth || null)))
-}
-function setDriveAuth(auth){
-    return new Promise((resolve) => chrome.storage.local.set({driveAuth: auth}, resolve))
-}
-function clearDriveAuth(){
-    return new Promise((resolve) => chrome.storage.local.remove("driveAuth", resolve))
-}
-function launchAuthFlow(interactive){
-    const redirectUri = chrome.identity.getRedirectURL()  
-    const params = new URLSearchParams({
-        client_id: CLIENT_ID,
-        response_type: "token",
-        redirect_uri: redirectUri,
-        scope: "https://www.googleapis.com/auth/drive.appdata email",
-        prompt: "consent select_account"
-    })
-    const authUrl = `https://accounts.google.com/o/oauth2/auth?${params.toString()}`
-    return new Promise((resolve, reject) => {
-        chrome.identity.launchWebAuthFlow({url: authUrl, interactive}, (responseUrl) => {
-            if (chrome.runtime.lastError || !responseUrl){
-                reject(new Error(chrome.runtime.lastError) || "Google sign in was cancelled or failed")
-                return;
-            }
-            try{
-                const fragment = new URL(responseUrl).hash.slice(1)
-                const fragmentParams = new URLSearchParams(fragment)
-                const accessToken = fragmentParams.get("access_token")
-                if(!accessToken){
-                    reject(new Error("Google's response did not include an access token"))
-                    return
-                }
-                const expiresIn = parseInt(fragmentParams.get("expires_in") || "3600", 10)
-                resolve({token: accessToken, expiresAt: Date.now() + expiresIn * 1000})
-            }
-            catch(err){
-                reject(new Error("Could not parse google sign in response"))
-            }
-        
-        })
-    })
-}
-async function fetchDriveUserEmail(token) {
-    try{
-        const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {headers: {Authorization: `Bearer ${token}`}})
-        if (!res.ok)
-            return "Your Account"
-        const data = await res.json()
-        return data.email
-    }
-    catch{
-        return "Your account"
-    }
-}
-async function checkDriveConnection() {
-    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
-    if(!granted)
-        return null
-    const stored = await getDriveAuth()
-    if (stored && stored.expiresAt > Date.now()){
-        return {email: stored.email || "Your account"}
-    }
-    return null
-}
-async function ensureDrivePermission() {
-    const granted = await new Promise((resolve) => chrome.permissions.contains(PERMISSIONS, resolve))
-    if (granted)
-        return
-    const nowGranted = await new Promise((resolve) => chrome.permissions.request(PERMISSIONS, resolve))
-    if(!nowGranted)
-        throw new Error("Drive permission was not granted")
-}
-
-async function ensureDriveAccess(){
-    await ensureDrivePermission()
-    const stored = await getDriveAuth()
-    if(stored && stored.expiresAt > Date.now() + 60000)
-        return stored.token
-    const {token, expiresAt} = await launchAuthFlow(true)
-    const email = await fetchDriveUserEmail(token)
-    await setDriveAuth({token, expiresAt, email})
-    return token
-}
-
-async function disconnectDrive() {
-    const stored = await getDriveAuth()
-    if(stored && stored.token){
-        try{
-            await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${stored.token}`)
-        }
-        catch{
-
-        }
-        await clearDriveAuth()
-        await new Promise((resolve) => chrome.permissions.remove(PERMISSIONS, resolve))
-    }
-}
-async function uploadDriveFile(token, existingId, jsonString) {
-    if(existingId){
-        const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=media`, {
-            method: "PATCH",
-            headers: {Authorization: `Bearer ${token}`, "Content-Type": "application/json"},
-            body: jsonString
-        })
-        if(!res.ok)
-            throw new Error(`Drive update failed: ${res.status}`)
-        return res.json()
-    }
-    const boundary = "pt_boundary_" + Date.now()
-    const metadata = {name: DRIVE_FILENAME, parents: ["appDataFolder"], mimeType: "application/json"}
-    const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${jsonString}\r\n--${boundary}--\r\n`
-    console.log(body)
-    const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-        method: "POST",
-        headers: {Authorization: `Bearer ${token}`, "Content-Type": `multipart/related; boundary=${boundary}`},
-        body
-    })
-    if (!res.ok){
-        const msg = await res.text()
-        throw new Error(`Drive create failed: ${res.status} ${msg}`)
-    }
-    return res.json()
-}
-
-async function downloadBackup(token, fileId) {
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-        headers: {Authorization: `Bearer ${token}`}
-    })
-    if (!res.ok)
-        throw new Error(`Drive download failed: ${res.status}`)
-    return res.json()
-}
-
-async function findDriveFile(token) {
-    const query = encodeURIComponent(`name='${DRIVE_FILENAME}' and trashed = false`)
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${query}&fields=files(id,name)`,
-        {headers: {Authorization: `Bearer ${token}`}}
-    )
-    if (!res.ok)
-        throw new Error(`Drive list failed: ${res.status}`)
-    const data = await res.json()
-    return (data.files && data.files[0]) || null
-}
-
-(function initDrive() {
-    const accTxt = exportScripts.querySelector(".drive-account-text")
-    const connectBtn = exportScripts.querySelector("#drive-connect-btn")
-    const disconnectBtn = exportScripts.querySelector("#drive-disconnect-btn")
-    const backUp = exportScripts.querySelector("#drive-backup-btn")
-    const restoreBtn = exportScripts.querySelector("#drive-restore-btn")
-    const driveStatus = exportScripts.querySelector(".drive-status")
-
-    function driveConnected(email) {
-        accTxt.textContent = `Connected as ${email}`
-        connectBtn.hidden = true
-        disconnectBtn.hidden = false
-        backUp.disabled = false
-        restoreBtn.disabled = false
-    }
-    function driveDisconnected() {
-        accTxt.textContent = "Connect to drive to backup"
-        connectBtn.hidden = false
-        disconnectBtn.hidden = true
-        backUp.disabled = true
-        restoreBtn.disabled = true
-    }
-
-    (async function initState() {
-        const state = await checkDriveConnection()
-        if(state)
-            driveConnected(state.email)
-        else
-            driveDisconnected()
-    })()
-
-    connectBtn.addEventListener("click", async () => {
-        connectBtn.disabled = true
-        driveStatus.style.color = "rgb(167, 167, 167)"
-        driveStatus.innerHTML = "Waiting for google sign in"
-        try{
-            await ensureDriveAccess()
-            const state = await checkDriveConnection()
-            driveConnected(state ? state.email : "Your account")
-            driveStatus.style.color = "#39FF14"
-            driveStatus.innerHTML = "Connected"
-        }
-        catch(err){
-            console.error("Drive connecting failed", err)
-            driveStatus.style.color = "rgb(255, 20, 20)"
-            driveStatus.innerHTML = `Could not connect, see console for details`
-        }
-        finally{
-            connectBtn.disabled = false
-        }
-    })
-
-    disconnectBtn.addEventListener("click", async () => {
-        disconnectBtn.disabled = true
-        driveStatus.style.color = "rgb(167, 167, 167)"
-        driveStatus.innerHTML = "Disconnecting"
-        try{
-            await disconnectDrive()
-            driveDisconnected()
-            driveStatus.style.color = "#39FF14"
-            driveStatus.innerHTML = "Account disconnected"
-        }
-        catch(err){
-            console.error("Drive disconnect failed", err)
-            driveStatus.style.color = "rgb(255, 20, 20)"
-            driveStatus.textContent = "Could not disconnect, see console for details"
-        }
-        finally{
-            disconnectBtn.disabled = false
-        }
-    })
-    backUp.addEventListener("click", async () => {
-        backUp.disabled = true
-        driveStatus.style.color = "rgb(167, 167, 167)"
-        driveStatus.innerHTML = "Backing up files"
-        try{
-            const token = await ensureDriveAccess()
-            const snapshot = await PTStorage.exportSnapshot()
-            const existing = await findDriveFile(token)
-            await uploadDriveFile(token, existing ? existing.id : null, JSON.stringify(snapshot))
-            const scriptCount = Object.values(snapshot.sites || {}).reduce((sum, s) => sum + s.scripts.length, 0)
-            driveStatus.style.color = "#39FF14"
-            driveStatus.innerHTML = `Backed up ${scriptCount} to drive`
-        }
-        catch(err){
-            console.error("Drive backup failed", err)
-            driveStatus.style.color = "rgb(255, 20, 20)"
-            driveStatus.innerHTML = "Backup failed, see console for details"
-        }
-        finally{
-            backUp.disabled = false
-        }
-    })
-    restoreBtn.addEventListener("click", async () => {
-        restoreBtn.disabled = true
-        driveStatus.style.color = "rgb(167, 167, 167)"
-        driveStatus.innerHTML = "Looking for a backup"
-        try{
-            const token = await ensureDriveAccess()
-            const existing = await findDriveFile(token)
-            if(!existing){
-                driveStatus.style.color = "rgb(255, 20, 20)"
-                driveStatus.innerHTML = "No backup found in drive yet."
-                return;
-            }
-            const snapshot = await downloadBackup(token, existing.id)
-            await PTStorage.restoreAll(snapshot)
-            driveStatus.style.color = "#39FF14"
-            driveStatus.innerHTML = "Restored from drive"
-            refreshStats()
-        }
-        catch(err){
-            console.error("Scripts restoring failed: ", err)
-            driveStatus.style.color = "rgb(255, 20, 20)"
-            driveStatus.innerHTML = "Restore failed, see console for details"
-        }
-        finally{
-            restoreBtn.disabled = false
-        }
     })
 })()

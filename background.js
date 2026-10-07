@@ -1,3 +1,4 @@
+if (typeof importScripts === "function" && typeof PTStorage === "undefined")
 importScripts("storage.js");
 
 chrome.runtime.onInstalled.addListener(async (d) => {
@@ -7,20 +8,26 @@ chrome.runtime.onInstalled.addListener(async (d) => {
 
 chrome.runtime.onMessage.addListener((msg, sender, response) => {
     if(msg && msg.type === "RUN_MAIN_WORLD_SCRIPT") {
-        if(!sender.tab || !sender.tab.id) {
+        if(!sender.tab || sender.tab.id == null) {
             response({ok: false, error: "no tab context to run in"})
             return
         }
-        chrome.scripting.executeScript({
+        if(!chrome.userScripts || typeof chrome.userScripts.execute !== "function") {
+            response({
+                ok: false,
+                error: "JavaScript execution permission is not enabled. Re-save the script and grant the requested permission."
+            });
+            return
+        }
+        chrome.userScripts.execute({
             target: {tabId: sender.tab.id},
             world: "MAIN",
-            func: (code) => {
-                new Function(code)();
-            },
-            args: [msg.code]
+            injectImmediately: true,
+            js: [{code: String(msg.code || "")}],
         }).then(() => response({ok: true}))
         .catch((err) => response({ok: false, error: String(err)}))
         return true;
     }
+
     console.log("Page tamperer message", msg)
-})
+});

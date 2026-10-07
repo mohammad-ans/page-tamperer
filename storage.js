@@ -117,7 +117,7 @@
     }
     async function getRunning() {
         const [all, settings] = await Promise.all([getAllScripts(), getSettings()]);
-        if (!settings.allowScripts)
+        if (!(settings.automaticManipulation && settings.allowScripts))
             return [];
         return all.filter((s) => s.enabled);
     }
